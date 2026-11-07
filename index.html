@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#080d1d">
+<title>НЕОН-РЕЙС 5.5 — VK GAMES</title>
+<style>
+:root{color-scheme:dark;--bg:#080d1d;--panel:#101a35;--line:#47618b88;--muted:#a9bbdc;--cyan:#5deaff;--purple:#9a83ff;--gold:#ffe27a;--green:#78f0b5;--danger:#ff8096}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;touch-action:pan-y;user-select:none;-webkit-tap-highlight-color:transparent}
+button{font:inherit}#game{display:block;width:100%;height:100%;touch-action:none}
+#ui{position:fixed;inset:0;color:#f4f7ff;pointer-events:none}
+.gameHud{position:absolute;top:max(10px,env(safe-area-inset-top));left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:0 12px;gap:8px;pointer-events:none}
+.hudGroup{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.pill{background:#101a35dc;border:1px solid var(--line);border-radius:13px;padding:8px 11px;backdrop-filter:blur(8px);font-weight:800;font-size:13px;letter-spacing:.2px;box-shadow:0 5px 20px #0003}
+.iconbtn{pointer-events:auto;border:1px solid #5873a2aa;background:#101a35ed;color:white;border-radius:12px;width:40px;height:39px;font-size:17px;cursor:pointer}.iconbtn:active,.touchbtn:active{transform:scale(.95)}
+#runStatus{position:absolute;top:max(57px,calc(env(safe-area-inset-top) + 54px));left:0;right:0;display:flex;justify-content:center;gap:7px;pointer-events:none;flex-wrap:wrap;padding:0 10px}.statusChip{background:#101a35d9;border:1px solid #5873a2aa;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:850;letter-spacing:.25px;box-shadow:0 5px 20px #0004}.statusChip.event{border-color:#a18bff99;color:#d9d0ff}.statusChip.power{border-color:#75eaff99;color:#aaf5ff}
+#touch{position:absolute;left:14px;bottom:max(14px,env(safe-area-inset-bottom));width:154px;height:154px;display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:5px;pointer-events:none}
+.touchbtn{pointer-events:auto;width:48px;height:48px;border-radius:14px;border:1px solid #83a7e477;background:#13264cbb;color:#fff;font-size:24px;font-weight:800;box-shadow:0 8px 25px #0005;touch-action:none;backdrop-filter:blur(5px)}
+#leftBtn{grid-column:1;grid-row:2}#upBtn{grid-column:2;grid-row:1}#downBtn{grid-column:2;grid-row:3}#rightBtn{grid-column:3;grid-row:2}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));background:#050918a8;pointer-events:auto}
+.panel{width:min(900px,100%);max-height:96dvh;overflow:auto;border:1px solid #6b8bc077;border-radius:24px;padding:clamp(16px,3vw,26px);background:linear-gradient(155deg,#17284cf5,#0b1228f7);box-shadow:0 20px 90px #000b;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5d8b transparent}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.brand{display:flex;align-items:center;gap:10px}.brandMark{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#39d8ff,#8d78ff);display:grid;place-items:center;color:#081225;font-size:24px;font-weight:1000;box-shadow:0 6px 22px #4d9bff55}.brand h1{margin:0;font-size:clamp(20px,4vw,28px);line-height:1;letter-spacing:1px}.brand small{display:block;margin-top:5px;color:#9db1d4;font-size:11px;letter-spacing:1.4px}.wallet{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.walletItem{background:#0a1530;border:1px solid #405c8c88;border-radius:12px;padding:8px 10px;font-size:13px;font-weight:850;white-space:nowrap}.walletItem b{color:var(--gold)}
+.languageSelect{border:1px solid #5873a2aa;background:#101a35;color:#f4f7ff;border-radius:11px;padding:7px 9px;font-size:12px;font-weight:850;min-height:36px;cursor:pointer;outline:none}.languageSelect:focus{border-color:var(--cyan);box-shadow:0 0 0 2px #5deaff33}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 16px}.tab{border:1px solid #49618b88;border-radius:12px;padding:10px 5px;background:#101a35;color:#b9c8e2;font-size:13px;font-weight:800;cursor:pointer}.tab.active{background:linear-gradient(100deg,#39cdeb33,#947cff33);border-color:#70cfff;color:#fff;box-shadow:inset 0 0 0 1px #75caff33}
+.content{min-height:250px}.sectionTitle{margin:0 0 5px;font-size:22px}.muted{color:var(--muted)}.lead{color:#b8c8e5;line-height:1.5;margin:6px 0 18px;font-size:14px}.homeGrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);gap:14px}.featureCard,.subCard,.shipCard,.upgradeCard,.statCard,.resultCard{border:1px solid #46618a88;background:linear-gradient(145deg,#16284bba,#0b1530e8);border-radius:18px;padding:16px}.featureCard{display:flex;flex-direction:column;justify-content:space-between;min-height:255px}.shipShow{display:flex;align-items:center;gap:15px}.shipVisual{width:88px;height:88px;border-radius:24px;background:radial-gradient(circle at 50% 42%,#2b4777,#101b37);border:1px solid #6689bd66;display:grid;place-items:center;flex:none}.shipShape{width:42px;height:58px;background:var(--ship-color,var(--cyan));clip-path:polygon(50% 0,95% 80%,50% 68%,5% 80%);filter:drop-shadow(0 0 12px var(--ship-color,var(--cyan)));position:relative}.shipShape:after{content:"";position:absolute;left:39%;top:34%;width:22%;height:18%;border-radius:50%;background:#fff}.shipName{font-size:20px;font-weight:900;margin-bottom:3px}.shipDesc{font-size:13px;color:#aabde0;line-height:1.4}.primary{border:0;border-radius:14px;padding:13px 20px;background:linear-gradient(95deg,#39d8ff,#9a83ff);color:#071126;font-size:15px;font-weight:950;letter-spacing:.4px;min-height:46px;box-shadow:0 8px 24px #4d9bff44;cursor:pointer}.primary:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}.secondary{border:1px solid #5c7ba9aa;border-radius:12px;padding:10px 13px;color:#edf4ff;background:#152747;cursor:pointer;font-weight:800}.secondary:disabled{opacity:.4;cursor:not-allowed}.buttonRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.bar{height:9px;border-radius:99px;background:#263957;overflow:hidden}.bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#45d9ff,#a189ff)}.progressMeta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#9fb3d6;margin:9px 0 6px}.statsRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}.statCard{padding:12px}.statLabel{color:#9bb0d5;font-size:12px}.statValue{font-size:22px;font-weight:950;margin-top:4px}.miniNote{font-size:11px;color:#8fa6cc;line-height:1.45;margin-top:12px}
+.shipGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}.shipCard{padding:12px;display:flex;flex-direction:column;min-width:0;gap:7px}.shipCard.selected{border-color:#61dfff;box-shadow:inset 0 0 0 1px #61dfff55,0 0 20px #4bcaff18}.shipCard .shipVisual{width:100%;height:76px;border-radius:14px}.shipCard .shipShape{transform:scale(.72)}.shipCard h3{font-size:14px;margin:0}.shipCard p{font-size:11px;color:#a9bbdc;line-height:1.35;margin:0;min-height:44px}.shipMeta{font-size:11px;color:#cbd8ef;min-height:30px}.shipCard button{margin-top:auto;width:100%;padding:9px 5px;font-size:11px;min-height:36px}.lockText{color:#ffda86}
+.upgradeGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.upgradeCard{display:flex;flex-direction:column;gap:9px}.upgradeHead{display:flex;align-items:center;gap:10px}.upgradeIcon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:#213b61;color:#75eaff;font-size:21px;flex:none}.upgradeCard h3{margin:0;font-size:15px}.upgradeCard p{margin:0;color:#a9bbdc;font-size:12px;line-height:1.4;min-height:34px}.levelDots{display:flex;gap:5px}.levelDots i{height:6px;flex:1;border-radius:8px;background:#293b5b}.levelDots i.on{background:linear-gradient(90deg,#4bdcff,#9985ff)}.upgradeFoot{display:flex;align-items:center;justify-content:space-between;gap:8px}.upgradeFoot button{font-size:12px;padding:9px 12px;min-height:36px}
+.profileGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.profileGrid .statCard{min-height:85px}.saveStatus{font-size:11px;color:#88a6d3;margin-top:13px}.emptyHint{padding:18px;border:1px dashed #516b9680;border-radius:15px;color:#a9bbdc;text-align:center;font-size:13px}
+.resultHero{text-align:center;padding:10px 0 16px}.resultHero .medal{font-size:40px}.resultHero h2{font-size:28px;margin:5px 0}.resultGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.resultCard{text-align:center;padding:12px}.resultCard strong{display:block;font-size:22px}.resultCard span{color:#9fb3d6;font-size:11px}.resultRewards{border:1px solid #48658d88;background:#0c1935;border-radius:15px;padding:13px;margin-top:12px;line-height:1.6;font-size:14px}.levelUp{color:#ffe27a;font-weight:950}.hidden{display:none!important}.smallText{font-size:11px;color:#8fa6cc;line-height:1.45}.menuFooter{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:15px;flex-wrap:wrap}
+.rewardAdCard{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px;padding:13px 15px;border:1px solid #6e8dc477;border-radius:16px;background:linear-gradient(105deg,#172b50dd,#1a2850bb)}.rewardAdCopy{min-width:0}.rewardAdTitle{font-weight:950;color:#f4f7ff;font-size:14px}.rewardAdText{font-size:11px;line-height:1.45;color:#a9bbdc;margin-top:3px}.rewardAdButton{flex:none;min-width:148px}.rewardAdMessage{min-height:16px;margin-top:6px;font-size:11px;color:#ffe27a}.rewardAdButton:disabled{opacity:.42;cursor:not-allowed}@media(max-width:540px){.header{align-items:flex-start;flex-wrap:wrap}.wallet{width:100%;justify-content:flex-end}.rewardAdCard{align-items:stretch;flex-direction:column}.rewardAdButton{width:100%}}
+
+.leaderboardSelectors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:12px}.leaderboardSelect{border:1px solid #49618b88;border-radius:12px;padding:10px 6px;background:#101a35;color:#b9c8e2;font-size:12px;font-weight:850;cursor:pointer}.leaderboardSelect.active{background:linear-gradient(100deg,#39cdeb33,#947cff33);border-color:#70cfff;color:#fff}.leaderboardPanel{min-height:180px}.leaderboardPanelHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.leaderboardTitle{font-size:17px;font-weight:950}.leaderboardRows{display:flex;flex-direction:column;gap:6px}.leaderboardRow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid #3b557b88;border-radius:12px;background:#0c1935}.leaderboardRank{color:#78e6ff;font-weight:950}.leaderboardName{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:750}.leaderboardScore{color:#ffe27a;font-variant-numeric:tabular-nums}.leaderboardAuth{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:12px;border:1px solid #49618b88;border-radius:14px;background:#101a35;color:#a9bbdc;font-size:12px;line-height:1.45}.leaderboardAuth button{white-space:nowrap}
+@media(max-width:720px){.leaderboardSelectors{grid-template-columns:1fr}.leaderboardAuth{align-items:stretch;flex-direction:column}.leaderboardAuth button{width:100%}.homeGrid{grid-template-columns:1fr}.shipGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.shipCard:last-child{grid-column:span 2}.upgradeGrid{grid-template-columns:1fr}.profileGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{border-radius:19px}.brand small{font-size:9px}.walletItem{font-size:12px;padding:7px 8px}.gameHud{gap:5px;padding:0 8px}.pill{font-size:11px;padding:7px 8px}.iconbtn{width:36px;height:36px}}
+@media(max-height:650px){.panel{max-height:98dvh;padding:14px}.featureCard{min-height:210px}.tabs{margin-bottom:10px}.shipCard{padding:9px}.shipCard .shipVisual{height:58px}.shipCard p{min-height:32px}#touch{bottom:8px;width:132px;height:132px;grid-template-columns:repeat(3,40px);grid-template-rows:repeat(3,40px);gap:4px}.touchbtn{width:40px;height:40px;font-size:21px}}
+@media(pointer:coarse){#touch{display:grid}}
+.levelUpOverlay{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:#040817dc;backdrop-filter:blur(9px);pointer-events:auto}
+.levelUpPanel{width:min(760px,100%);max-height:92dvh;overflow:auto;padding:clamp(18px,3vw,28px);border:1px solid #68dfffa0;border-radius:24px;background:linear-gradient(155deg,#182b50f7,#0a1228fa);box-shadow:0 20px 90px #000d;text-align:center}
+.levelUpKicker{color:#80eaff;font-size:12px;font-weight:1000;letter-spacing:1.8px}
+.levelUpPanel h2{margin:10px 0 6px;font-size:clamp(22px,4vw,30px);color:#fff}
+.levelUpPanel>p{margin:0 auto 18px;max-width:500px;color:#afc1e2;font-size:13px;line-height:1.5}
+.runLevelChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;text-align:left}
+.runPerkCard{min-height:190px;padding:15px;border:1px solid #5a77a7aa;border-radius:17px;background:linear-gradient(160deg,#1b3157,#101a35);color:#f5f7ff;display:flex;flex-direction:column;align-items:flex-start;gap:9px;text-align:left;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
+.runPerkCard:hover{transform:translateY(-3px);border-color:#66e9ff;background:linear-gradient(160deg,#23416b,#111e3d)}
+.runPerkIcon{font-size:28px;color:#75eaff;text-shadow:0 0 16px #62dcff66}
+.runPerkCard strong{font-size:15px;line-height:1.2}
+.runPerkCard span:not(.runPerkIcon){font-size:12px;line-height:1.45;color:#b6c8e8}
+.runPerkCard small{margin-top:auto;color:#78eaff;font-size:10px;font-weight:1000;letter-spacing:1px}
+@media(max-width:650px){.runLevelChoices{grid-template-columns:1fr}.runPerkCard{min-height:0;padding:12px;display:grid;grid-template-columns:34px 1fr;gap:4px 10px}.runPerkIcon{grid-row:span 3}.runPerkCard small{margin:4px 0 0}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Игровое поле Неон-рейс"></canvas>
+<div id="ui">
+  <div id="gameHud" class="gameHud hidden">
+    <div class="hudGroup">
+      <div class="pill"><span id="hudScoreLabel">СЧЁТ</span> <span id="hudScore">0</span></div>
+      <div class="pill">♥ <span id="hudLives">3</span></div>
+      <div class="pill">LV <span id="hudRunLevel">1</span> · <span id="hudRunXP">0/6</span></div>
+    </div>
+    <div class="hudGroup">
+      <div class="pill">✦ <span id="hudCrystals">0</span></div>
+      <button class="iconbtn" id="soundBtn" aria-label="Звук" title="Звук">♫</button>
+      <button class="iconbtn" id="pauseBtn" aria-label="Пауза">Ⅱ</button>
+    </div>
+  </div>
+  <div id="runStatus" class="hidden"><span id="eventBadge" class="statusChip event hidden"></span><span id="powerBadge" class="statusChip power hidden"></span></div>
+  <div id="levelUpOverlay" class="levelUpOverlay hidden" role="dialog" aria-modal="true" aria-labelledby="levelUpHeadline">
+    <section class="levelUpPanel">
+      <div class="levelUpKicker">✦ ПОВЫШЕНИЕ УРОВНЯ · <span id="runLevelTitle">2</span></div>
+      <h2 id="levelUpHeadline">ВЫБЕРИ ОДНО УСИЛЕНИЕ</h2>
+      <p>Выбери улучшение для этого полёта. Сочетай скорость, защиту и сбор ресурсов.</p>
+      <div id="runLevelChoices" class="runLevelChoices"></div>
+    </section>
+  </div>
+  <div id="touch" class="hidden" aria-label="Экранное управление">
+    <button class="touchbtn" id="leftBtn" aria-label="Влево">←</button>
+    <button class="touchbtn" id="upBtn" aria-label="Вверх">↑</button>
+    <button class="touchbtn" id="downBtn" aria-label="Вниз">↓</button>
+    <button class="touchbtn" id="rightBtn" aria-label="Вправо">→</button>
+  </div>
+  <div id="menuOverlay" class="overlay">
+    <div class="panel">
+      <div class="header">
+        <div class="brand"><div class="brandMark">✦</div><div><h1 id="brandTitle">НЕОН-РЕЙС</h1><small id="brandSubtitle">КОСМИЧЕСКАЯ АРКАДА</small></div></div>
+        <div class="wallet"><select id="languageSelect" class="languageSelect" aria-label="Язык игры" title="Язык игры"><option value="ru">Русский</option><option value="en">English</option></select><div class="walletItem">✦ <b id="walletCrystals">0</b></div><div class="walletItem"><span id="walletLevelLabel">УРОВЕНЬ</span> <b id="walletLevel">1</b></div></div>
+      </div>
+      <nav class="tabs" id="tabs">
+        <button class="tab active" data-tab="home" id="tabHome">ПОЛЁТ</button>
+        <button class="tab" data-tab="garage" id="tabGarage">АНГАР</button>
+        <button class="tab" data-tab="upgrades" id="tabUpgrades">УЛУЧШЕНИЯ</button>
+        <button class="tab" data-tab="pilot" id="tabPilot">ПИЛОТ</button>
+      </nav>
+      <main id="screenContent" class="content"></main>
+      <div class="menuFooter"><span id="saveStatus" class="saveStatus">Прогресс сохраняется автоматически</span><span class="smallText" id="footerControls">← → ↑ ↓ / WASD · На телефоне — джойстик или перетаскивание</span><button class="iconbtn" id="menuSoundBtn" aria-label="Включить или выключить звук" title="Звук">♫</button></div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('game'), ctx = canvas.getContext('2d');
+const LANGUAGE_KEY = 'neonRaceLanguage_vk';
+function detectLanguage(){
+  try{const saved=localStorage.getItem(LANGUAGE_KEY);if(saved==='ru'||saved==='en')return saved}catch(e){}
+  return 'ru'; // VK requires Russian as the first-launch language.
+}
+let currentLanguage=detectLanguage();
+const TRANSLATIONS={
+  'Игровое поле Неон-рейс':'Neon Race game field','Звук':'Sound','Пауза':'Pause','Экранное управление':'Touch controls','Влево':'Left','Вверх':'Up','Вниз':'Down','Вправо':'Right','Включить или выключить звук':'Toggle sound','НЕОН-РЕЙС':'NEON RACE','КОСМИЧЕСКАЯ АРКАДА':'SPACE ARCADE','СЧЁТ':'SCORE','УРОВЕНЬ':'LEVEL','ПОЛЁТ':'FLIGHT','АНГАР':'HANGAR','УЛУЧШЕНИЯ':'UPGRADES','ПИЛОТ':'PILOT','ТОП':'LEADERBOARDS','Прогресс сохраняется автоматически':'Progress is saved automatically','← → ↑ ↓ / WASD · На телефоне — джойстик или перетаскивание':'← → ↑ ↓ / WASD · On mobile, use the on-screen controls or drag',
+  'Стриж':'Swift','Сбалансированный корабль для первых полётов.':'A balanced ship for your first flights.','Без особых бонусов':'No special perks','Фантом':'Phantom','Лёгкий корпус и отзывчивые двигатели.':'A light hull and responsive engines.','+18% к скорости движения':'+18% movement speed','Страж':'Guardian','Усиленная конструкция выдерживает больше ударов.':'Reinforced construction withstands more hits.','+2 дополнительные жизни':'+2 extra lives','Магнит':'Magnet','Энергетический контур притягивает звёзды.':'An energy field attracts stars.','+45 к радиусу сбора':'+45 collection radius','Призрак':'Wraith','Фазовый двигатель один раз спасает от столкновения.':'A phase engine saves you from one collision.','Игнорирует первое столкновение':'Survives the first collision',
+  'Двигатель':'Engine','Каждый уровень увеличивает скорость перемещения на 12%.':'Each level increases movement speed by 12%.','Скорость +':'Speed +','Радиус сбора +':'Collection radius +','Сильно расширяет радиус сбора звёзд и энергии.':'Greatly increases the collection radius for stars and energy.','Корпус':'Hull','Каждый уровень даёт одну дополнительную жизнь в начале заезда.':'Each level grants one extra life at the start of a run.','Дополнительные жизни +':'Extra lives +','Сканер':'Scanner','Чаще обнаруживает звёзды — больше кристаллов и повышений уровня в полёте.':'Finds stars more often, providing more crystals and in-run level-ups.','Частота звёзд +':'Star spawn rate +','Реактор':'Reactor','Увеличивает количество очков, получаемых за время в полёте.':'Increases the points earned for time spent in flight.','Очки за время +':'Flight score +','Экранирование':'Shield System','Каждый уровень добавляет один заряд щита в начале полёта. Заряд действует дольше с каждым уровнем.':'Each level grants one shield charge at the start of a flight. The shield lasts longer with each level.','Стартовые заряды щита +':'Starting shield charges +',
+  'Лучший результат':'Highest Score','Максимальное количество очков за один полёт.':'The highest score earned in a single flight.','Выносливость':'Longest Flight','Самый продолжительный полёт. Значение отправляется в миллисекундах.':'Your longest flight. The value is submitted in milliseconds.','Охотник на боссов':'Boss Hunter','Максимум побеждённых боссов за один полёт.':'The most bosses defeated in a single run.',
+  'Облачное и локальное сохранение включены':'Cloud and local saves are enabled','Прогресс сохранён на устройстве':'Progress saved on this device','Не удалось сохранить локальный прогресс':'Could not save local progress','Локальный прогресс сохранён; облако временно недоступно':'Local progress saved; cloud storage is temporarily unavailable','SDK подключён; локальное сохранение активно':'SDK connected; local saving is active','Офлайн-режим: локальное сохранение активно':'Offline mode: local saving is active','Локальный режим: прогресс сохраняется на устройстве; SDK VKа включается в Консоли':'Local mode: progress is saved on this device. Enable the VK SDK in the Developer Console.','SDK загружен некорректно; доступно локальное сохранение':'SDK did not load correctly; local saving is available','SDK не загрузился; доступно локальное сохранение':'SDK could not be loaded; local saving is available','Запрошена синхронизация облачного сохранения':'Cloud save synchronization requested','Открывается авторизация VKа…':'Opening VK authorization…','Можно продолжить без авторизации; локальное сохранение работает':'You can continue without signing in; local saving is available','Прогресс синхронизируется с облаком':'Progress is syncing with the cloud',
+  'РЕКЛАМА ОТКРЫТА…':'AD OPEN…','РЕКЛАМА НЕДОСТУПНА':'AD UNAVAILABLE','СМОТРЕТЬ ВИДЕО · +':'WATCH VIDEO · +','🎬 Бонус за просмотр рекламы':'🎬 Watch an ad for a bonus','Посмотри добровольный рекламный ролик и получи ':'Watch an optional video ad and get ',' кристаллов. Награда начисляется только после подтверждения просмотра рекламного ролика платформой.':' crystals. The reward is granted only after the platform confirms the completed view.','Видео по желанию · награду можно получить после просмотра':'Optional video · claim a reward after watching','Доступно после подключения SDK и монетизации в Консоли':'Available after enabling the SDK and monetization in the Developer Console','Награда получена: +':'Reward received: +',' кристаллов!':' crystals!','Не удалось загрузить видео. Попробуй позже.':'Could not load the video. Try again later.','Просмотр не был засчитан — награда не начислена.':'The view was not counted — no reward was granted.','Реклама сейчас недоступна. Попробуй позже.':'Ads are currently unavailable. Try again later.','Реклама пока недоступна. Проверь подключение монетизации в Консоли VK Игр.':'Ads are not available yet. Check monetization settings in the VK Games Console.','Подготавливаем рекламное видео…':'Preparing the video ad…','Смотри видео до конца, чтобы получить награду.':'Watch the video to the end to receive your reward.','Платформа засчитала просмотр. Начислено +':'The platform confirmed the view. Added +',' кристаллов.':' crystals.','Выключить звук':'Mute sound','Включить звук':'Unmute sound','Звук включён':'Sound on','Звук выключен':'Sound off',
+  'Загружаем таблицу рекордов…':'Loading leaderboard…','Таблицы рекордов доступны в опубликованной игре на VK Играх. В локальном режиме остальные функции игры продолжают работать.':'Leaderboards are available in the published VK Games version. All other game features work in local mode.','Нажми «Обновить», чтобы загрузить рейтинг.':'Press “Refresh” to load the leaderboard.','Пока нет результатов. Стань первым пилотом в этом рейтинге!':'No scores yet. Be the first pilot on this leaderboard!','Пилот VKа':'VK pilot','Твоя позиция: ':'Your rank: ','Ты вошёл в VK ID — результаты можно отправлять в рейтинги.':'You are signed in to VK ID — you can submit scores to the leaderboards.','Для отправки собственных результатов войди через VK ID. Просматривать общий топ можно и без авторизации.':'Sign in with VK ID to submit your scores. You can view the public leaderboard without signing in.','В текущей версии бои с боссами ещё не добавлены. Таблица уже подготовлена; результаты начнут отправляться после появления боссов в игровом процессе.':'Boss battles are not yet available in this version. The leaderboard is ready; scores will be submitted once bosses are added to gameplay.','Таблица рекордов':'Leaderboards','Соревнуйся с другими пилотами VK Игр и поднимайся в мировом рейтинге.':'Compete with other VK Games pilots and climb the global rankings.','↻ ОБНОВИТЬ':'↻ REFRESH','ВОЙТИ В VK':'SIGN IN WITH VK','Рейтинги публикуются через VK Games SDK. В Консоли разработчика необходимо создать три таблицы с техническими именами, указанными в инструкции к архиву.':'Leaderboards are powered by the VK Games SDK. Create the three leaderboards in the Developer Console using the technical names listed in the ZIP instructions.','SDK лидербордов недоступен. Открой игру через VK Игры.':'Leaderboard SDK is unavailable. Open the game through VK Games.','Эта таблица недавно обновлялась. Повтори запрос через ':'This leaderboard was refreshed recently. Try again in ',' сек.':' sec.','Лимит запросов рейтинга. Попробуй снова через ':'Leaderboard request limit reached. Try again in ','Таблица «':'Leaderboard “','» не найдена. Создай лидерборд с техническим именем ':'” not found. Create a leaderboard with the technical name ','Не удалось загрузить рейтинг. Проверь настройки лидерборда и попробуй ещё раз.':'Could not load the leaderboard. Check its settings and try again.','Отправка рекордов недоступна для этого профиля.':'Score submission is unavailable for this profile.','Лучшие результаты отправлены в таблицы VK Игр.':'Your best scores were submitted to VK Games leaderboards.','Не удалось отправить рекорды. Проверь авторизацию и наличие таблиц в Консоли.':'Could not submit scores. Check your sign-in status and leaderboard setup in the Console.',
+  'ТВОЙ КОРАБЛЬ':'YOUR SHIP','НАЧАТЬ ПОЛЁТ':'START FLIGHT','АНГАР':'HANGAR','ПРОГРЕСС ПИЛОТА':'PILOT PROGRESS','За каждый полёт получай опыт. При повышении уровня выдаются кристаллы и открывается доступ к новым кораблям.':'Earn experience on every flight. Level up to receive crystals and unlock new ships.','ЛУЧШИЙ СЧЁТ':'HIGH SCORE','ПОЛЁТОВ':'RUNS','Уклоняйся от разных астероидов, проходи через проёмы энергетических ворот и переживай события. Подбирай усиления: ◇ щит, ✧ магнит и ◷ замедление. Собирай кристаллы, развивай корабль и пилота — прогресс сохраняется между заездами.':'Dodge different asteroids, pass through energy gates and survive changing events. Collect power-ups: ◇ shield, ✧ magnet and ◷ slow motion. Gather crystals, upgrade your ship and level up your pilot — your progress carries over between runs.','Ангар кораблей':'Ship Hangar','Покупай корабли за кристаллы. У каждого — своя особенность. Купленный корабль можно выбирать перед каждым полётом.':'Buy ships with crystals. Each ship has a unique perk, and you can choose any unlocked ship before each flight.','ВЫБРАН':'SELECTED','ВЫБРАТЬ':'SELECT','НУЖЕН УР. ':'REQUIRES LV. ','КУПИТЬ · ':'BUY · ','Кристаллы зарабатываются в обычных заездах. Донат, платные предметы и внешние ассеты не используются.':'Earn crystals by playing runs. No paid items or external assets are used.','Мастерская улучшений':'Upgrade Workshop','Улучшения действуют постоянно и применяются автоматически в каждом новом заезде.':'Upgrades are permanent and apply automatically to every new run.','Новые системы мастерской открываются по мере роста уровня пилота.':'New workshop systems unlock as your pilot levels up.','Откроется на уровне ':'Unlocks at level ','ЗАКРЫТО':'LOCKED','Уровень ':'Level ','МАКСИМУМ':'MAX LEVEL','Цена: ':'Cost: ','МАКС.':'MAX','В АНГАР':'TO HANGAR','УЛУЧШИТЬ':'UPGRADE','Профиль пилота':'Pilot Profile','Твой опыт, рекорды и коллекция сохраняются после закрытия игры.':'Your experience, records and collection are saved when you leave the game.','ТЕКУЩИЙ УРОВЕНЬ':'CURRENT LEVEL','ОБЩИЙ ОПЫТ':'TOTAL EXPERIENCE','До уровня ':'Progress to level ','КРИСТАЛЛЫ':'CRYSTALS','ЗАЕЗДЫ':'RUNS','СОБРАНО ЗВЁЗД':'STARS COLLECTED','ЛУЧШИЙ ПОЛЁТ':'LONGEST FLIGHT',' мин':' min','БОССЫ':'BOSSES','ОТКРЫТО КОРАБЛЕЙ':'SHIPS UNLOCKED','СИНХРОНИЗИРОВАТЬ ОБЛАКО':'SYNC CLOUD SAVE','Профиль VKа авторизован. Прогресс синхронизируется с облачным сохранением.':'VK profile authorized. Progress syncs with cloud storage.','Локальное сохранение работает без входа. Авторизация VKа необязательна и позволит продолжать игру под своим профилем; облачные данные синхронизируются через SDK.':'Local saving works without signing in. VK authorization is optional and lets you continue under your profile; cloud data syncs through the SDK.',
+  'ПОЛЁТ ЗАВЕРШЁН':'FLIGHT COMPLETE','Отличная попытка, пилот!':'Great run, pilot!','ОЧКИ':'SCORE','ЗВЁЗДЫ':'STARS','ВРЕМЯ':'TIME','Получено кристаллов за звёзды и бонусы: ':'Crystals earned from stars and bonuses: ','Получено опыта: ':'Experience earned: ','НОВЫЙ УРОВЕНЬ! Теперь ты пилот ':'LEVEL UP! You are now pilot level ','-го уровня. Бонус: +':'. Bonus: +',' наградных кристаллов.':' bonus crystals.','Всего кристаллов: ':'Total crystals: ','ЕЩЁ ОДИН ПОЛЁТ':'FLY AGAIN','ПАУЗА':'PAUSED','Астероиды подождут. Можешь продолжить или вернуться в ангар.':'The asteroids can wait. Continue your flight or return to the hangar.','ПРОДОЛЖИТЬ':'RESUME','МАКС.':'MAX','В АНГАР':'TO HANGAR',
+  'МЕТЕОРИТНЫЙ ДОЖДЬ':'METEOR SHOWER','КРИСТАЛЬНЫЙ РАШ':'CRYSTAL RUSH','ГРАВИТАЦИОННЫЙ ШТОРМ':'GRAVITY STORM','☄ МЕТЕОРИТНЫЙ ДОЖДЬ':'☄ METEOR SHOWER','✦ КРИСТАЛЬНЫЙ РАШ':'✦ CRYSTAL RUSH','〰 ГРАВИТАЦИОННЫЙ ШТОРМ':'〰 GRAVITY STORM','◇ ЩИТ':'◇ SHIELD','✧ МАГНИТ':'✧ MAGNET','◷ ЗАМЕДЛЕНИЕ':'◷ SLOW MOTION',
+  'SDK подключён; локальное сохранение активно':'SDK connected; local saving is active','Облачное и локальное сохранение включены':'Cloud and local saving are enabled','Прогресс сохранён на устройстве':'Progress saved on this device','Не удалось сохранить локальный прогресс':'Could not save local progress'
+  ,'VK Игры':'VK Games'
+  ,'Игра подключена к VK Игры.':'Connected to VK Games.'
+  ,'Облачное и локальное сохранение включены':'Cloud and local saves are enabled'
+  ,'Облако VK временно недоступно; локальный прогресс сохранён':'VK cloud storage is temporarily unavailable; local progress was saved'
+  ,'Не удалось сохранить в облако VK. Локальный прогресс сохранён.':'Could not save to VK cloud. Local progress was saved.'
+  ,'Облачное сохранение VK синхронизировано':'VK cloud save synchronized'
+  ,'Сохранение изменено на другом устройстве. Перезагрузи игру, чтобы загрузить актуальный прогресс.':'Save data changed on another device. Reload the game to load the latest progress.'
+  ,'Профиль VK':'VK profile'
+  ,'VK Bridge подключён. Прогресс сохраняется в облаке платформы.':'VK Bridge is connected. Progress is saved to the platform cloud.'
+  ,'ВОЙТИ В VK':'SIGN IN TO VK'
+  ,'Открывается авторизация VK…':'Opening VK sign-in…'
+  ,'Авторизация не выполнена. Можно продолжить без входа.':'Sign-in was not completed. You can continue as a guest.'
+  ,'Синхронизировать облако':'SYNC CLOUD SAVE'
+  ,'Облачные сохранения VK':'VK cloud saves'
+  ,'Облачные сохранения доступны после подключения SDK VK.':'VK cloud saves are available after the VK SDK is connected.'
+  ,' кристаллов. Награда начисляется только после подтверждения просмотра рекламного ролика платформой.':' crystals. The reward is granted only after the platform confirms the completed view.'
+  ,'Реклама пока недоступна. Проверь подключение монетизации в Консоли VK Игр.':'Rewarded ads are unavailable. Check the VK Studio ad settings.'
+  ,'Подготавливаем рекламное видео…':'Preparing rewarded video…'
+  ,'Смотри видео до конца, чтобы получить награду.':'Watch the video to the end to receive the reward.'
+  ,'Платформа засчитала просмотр. Начислено +':'The platform confirmed the view. Added +'
+  ,'Глобальные таблицы рекордов пока не подключены в этой сборке. Личные рекорды сохраняются в профиле и облаке игры.':'Global leaderboards are not configured in this build yet. Personal records are saved in the game profile and platform cloud.'
+  ,'Авторизация VK необязательна.':'VK sign-in is optional.'
+  ,'Облачное хранилище VK доступно и гостям.':'VK cloud storage is also available to guest players.'
+  ,'Локальный режим: прогресс сохраняется на устройстве; SDK VK включается в тестовом окружении.':'Local mode: progress is saved on this device; the VK SDK is enabled in the test environment.'
+  ,'SDK VK недоступен; игра работает с локальным сохранением':'VK SDK is unavailable; the game is using local saves'
+  ,'SDK VK не загрузился; доступно локальное сохранение':'VK SDK could not be loaded; local saving is available'
+  ,'SDK VK загружен некорректно; доступно локальное сохранение':'VK SDK did not load correctly; local saving is available'
+  ,'Прогресс отправлен в облачное хранилище VK':'Progress sent to VK cloud storage'
+  ,'Изменения записаны в хранилище VK; облачная синхронизация выполняется автоматически':'Changes saved to VK storage; cloud sync is running automatically'
+  ,'Изменения сохранены; облачная синхронизация выполняется автоматически':'Changes saved; cloud synchronization will complete automatically'
+
+  ,'ВЫБЕРИ ОДНО УСИЛЕНИЕ':'CHOOSE ONE UPGRADE'
+  ,'Выбери улучшение для этого полёта. Сочетай оружие, защиту и сбор ресурсов.':'Choose an upgrade for this flight. Combine weapons, defence and resource gathering.'
+  ,'ВЫБРАТЬ УСИЛЕНИЕ':'CHOOSE UPGRADE'
+  ,'Перегрузка затвора':'Overloaded Trigger','Автопушка стреляет на 12% быстрее.':'The auto-cannon fires 12% faster.'
+  ,'Пробивные импульсы':'Piercing Pulses','Каждый снаряд наносит на 1 урон больше.':'Each projectile deals 1 extra damage.'
+  ,'Раздвоенный залп':'Double Volley','Автопушка выпускает ещё один снаряд за выстрел.':'The auto-cannon fires one additional projectile.'
+  ,'Энергощит':'Energy Shield','Восстанавливает один заряд щита на 22 секунды.':'Restores one shield charge for 22 seconds.'
+  ,'Форсаж':'Afterburner','Скорость корабля увеличивается на 9%.':'Ship movement speed increases by 9%.'
+  ,'Гравитационный захват':'Gravity Pull','Радиус сбора звёзд увеличивается на 28.':'Star collection radius increases by 28.'
+  ,'Аварийный ремонт':'Emergency Repair','Увеличивает запас корпуса и восстанавливает одну жизнь.':'Increases hull capacity and restores one life.'
+  ,'Каждый уровень увеличивает скорость перемещения на 12%.':'Each level increases movement speed by 12%.'
+  ,'Сильно расширяет радиус сбора звёзд и энергии.':'Greatly increases the pickup radius for stars and energy.'
+  ,'Каждый уровень даёт одну дополнительную жизнь в начале заезда.':'Each level grants one extra life at the start of a run.'
+  ,'Чаще обнаруживает звёзды: больше кристаллов и повышений уровня в полёте.':'Finds stars more often: more crystals and in-flight level-ups.'
+  ,'Увеличивает счёт и ускоряет перезарядку автоматической пушки.':'Increases score and speeds up the auto-cannon reload.'
+  ,'Импульсная пушка':'Pulse Cannon','Автоматически атакует ближайшие астероиды. Улучшения ускоряют огонь, повышают урон и добавляют снаряды.':'Automatically attacks nearby asteroids. Upgrades increase fire rate, damage and projectile count.'
+  ,'Валькирия':'Valkyrie','Штурмовой корабль с ускоренной системой наведения.':'An assault ship with an accelerated targeting system.'
+  ,'+1 снаряд и +18% скорострельность':'+1 projectile and +18% fire rate'
+  ,'Бастион':'Bastion','Крепость с усиленным полем защиты.':'A fortress with a reinforced defensive field.'
+  ,'+2 жизни и стартовый щит':'+2 lives and a starting shield'
+  ,'Шторм':'Tempest','Экспериментальная платформа для максимальной огневой мощи.':'An experimental platform built for maximum firepower.'
+  ,'+1 снаряд, +10% скорости и скорострельности':'+1 projectile, +10% speed and fire rate'
+  ,'Звёзды дают опыт прямо во время полёта: при повышении уровня выбери одно из трёх усилений. Опыт пилота и кристаллы сохраняются между забегами.':'Stars grant experience during a flight: level up to choose one of three temporary upgrades. Pilot XP and crystals persist between runs.'
+  ,'Автопушка сама атакует астероиды — собирай звёзды, чтобы повышать уровень прямо в полёте и выбирать одно из трёх временных усилений. Уклоняйся от волн и ворот, собирай кристаллы, открывай корабли и усиливай пушку в мастерской.':'Your auto-cannon attacks asteroids. Collect stars to level up mid-flight and choose one of three temporary upgrades. Dodge waves and gates, gather crystals, unlock ships and improve your cannon in the workshop.'
+  ,'Выбери улучшение для этого полёта. Сочетай оружие, защиту и сбор ресурсов.':'Choose an upgrade for this flight. Combine manoeuvrability, defence and resource gathering.'
+  ,'Форсаж':'Afterburner','Скорость корабля увеличивается на 10%.':'Ship movement speed increases by 10%.'
+  ,'Поле стазиса':'Stasis Field','Все препятствия и ворота движутся на 6% медленнее.':'All obstacles and gates move 6% slower.'
+  ,'Фазовый след':'Phase Trail','После столкновения неуязвимость длится на 0,18 секунды дольше.':'Invulnerability after a collision lasts 0.18 seconds longer.'
+  ,'Сканер-эхо':'Echo Scanner','Звёзды появляются на 8% чаще.':'Stars appear 8% more often.'
+  ,'Стартовый корабль. Надёжная база для первых манёвров.':'A starter ship and a reliable base for your first evasive runs.'
+  ,'Сбалансированные характеристики':'Balanced characteristics'
+  ,'Манёвренный корпус для резких уклонений.':'A nimble hull built for sharp evasive moves.'
+  ,'+15% к скорости и +1 жизнь':'+15% speed and +1 life'
+  ,'Экспериментальный корабль с мощными маневровыми двигателями.':'An experimental ship with powerful manoeuvring thrusters.'
+  ,'+10% скорости и +35 к радиусу сбора':'+10% speed and +35 pickup radius'
+  ,'Сильно расширяет радиус сбора звёзд и энергии.':'Greatly increases the pickup radius for stars and energy.'
+  ,'Каждый уровень даёт одну дополнительную жизнь в начале заезда.':'Each level grants one extra life at the start of a run.'
+  ,'Увеличивает количество очков за время, проведённое в полёте.':'Increases the score earned for time spent in flight.'
+};
+const translationPairs=Object.entries(TRANSLATIONS).sort((a,b)=>b[0].length-a[0].length);
+function translateText(value){
+  let text=String(value??'');
+  if(currentLanguage!=='en')return text;
+  for(const [ru,en] of translationPairs)text=text.split(ru).join(en);
+  return text;
+}
+function translateMarkup(markup){return translateText(markup)}
+let saveStatusSource='Прогресс сохраняется автоматически';
+function setSaveStatus(value){saveStatusSource=String(value);$('saveStatus').textContent=translateText(saveStatusSource)}
+function applyLanguageShell(){
+  document.documentElement.lang=currentLanguage;
+  document.title=currentLanguage==='en'?'NEON RACE 5.5 — VK GAMES':'НЕОН-РЕЙС 5.5 — VK GAMES';
+  $('game').setAttribute('aria-label',translateText('Игровое поле Неон-рейс'));
+  $('hudScoreLabel').textContent=translateText('СЧЁТ');
+  $('soundBtn').setAttribute('aria-label',translateText('Звук'));$('pauseBtn').setAttribute('aria-label',translateText('Пауза'));
+  $('touch').setAttribute('aria-label',translateText('Экранное управление'));
+  $('leftBtn').setAttribute('aria-label',translateText('Влево'));$('upBtn').setAttribute('aria-label',translateText('Вверх'));$('downBtn').setAttribute('aria-label',translateText('Вниз'));$('rightBtn').setAttribute('aria-label',translateText('Вправо'));
+  $('brandTitle').textContent=translateText('НЕОН-РЕЙС');$('brandSubtitle').textContent=translateText('КОСМИЧЕСКАЯ АРКАДА');$('walletLevelLabel').textContent=translateText('УРОВЕНЬ');
+  const shellLabels={tabHome:'ПОЛЁТ',tabGarage:'АНГАР',tabUpgrades:'УЛУЧШЕНИЯ',tabPilot:'ПИЛОТ'};
+  for(const [id,value] of Object.entries(shellLabels))$(id).textContent=translateText(value);
+  $('footerControls').textContent=translateText('← → ↑ ↓ / WASD · На телефоне — джойстик или перетаскивание');
+  $('languageSelect').value=currentLanguage;$('languageSelect').setAttribute('aria-label',currentLanguage==='en'?'Game language':'Язык игры');$('languageSelect').title=currentLanguage==='en'?'Game language':'Язык игры';
+  $('menuSoundBtn').setAttribute('aria-label',translateText('Включить или выключить звук'));
+  setSaveStatus(saveStatusSource);updateSoundButtons();
+}
+const SAVE_KEY = 'neonRaceProgress_vk_v1';
+const SHIPS = [
+  {id:'scout', name:'Стриж', price:0, level:1, color:'#5deaff', desc:'Стартовый корабль. Надёжная база для первых манёвров.', perk:'Сбалансированные характеристики'},
+  {id:'phantom', name:'Фантом', price:180, level:2, color:'#b78cff', desc:'Лёгкий корпус и отзывчивые двигатели.', perk:'+18% к скорости движения', speed:1.18},
+  {id:'guardian', name:'Страж', price:350, level:5, color:'#ff9b70', desc:'Усиленная конструкция выдерживает больше ударов.', perk:'+2 дополнительные жизни', lives:2},
+  {id:'magnet', name:'Магнит', price:600, level:8, color:'#78f0b5', desc:'Энергетический контур притягивает звёзды издалека.', perk:'+45 к радиусу сбора', magnet:45},
+  {id:'ghost', name:'Призрак', price:900, level:12, color:'#ffe27a', desc:'Фазовый двигатель один раз спасает от столкновения.', perk:'Игнорирует первое столкновение', revive:true},
+  {id:'valkyrie', name:'Валькирия', price:1400, level:17, color:'#ff75d8', desc:'Манёвренный корпус для резких уклонений.', perk:'+15% к скорости и +1 жизнь', speed:1.15, lives:1},
+  {id:'bastion', name:'Бастион', price:2100, level:23, color:'#ffbf68', desc:'Крепость с усиленным полем защиты.', perk:'+2 жизни и стартовый щит', lives:2, startShield:1},
+  {id:'storm', name:'Шторм', price:3000, level:30, color:'#8aa9ff', desc:'Экспериментальный корабль с мощными маневровыми двигателями.', perk:'+10% скорости и +35 к радиусу сбора', speed:1.10, magnet:35}
+];
+const RUN_PERKS = [
+  {id:'thrusters',title:'Форсаж',icon:'➤',desc:'Скорость корабля увеличивается на 10%.',max:5},
+  {id:'shield',title:'Энергощит',icon:'◇',desc:'Восстанавливает один заряд щита на 22 секунды.',max:3},
+  {id:'repair',title:'Аварийный ремонт',icon:'♥',desc:'Даёт дополнительную жизнь и восстанавливает одну жизнь.',max:3},
+  {id:'magnet',title:'Гравитационный захват',icon:'✧',desc:'Радиус сбора звёзд увеличивается на 30.',max:3},
+  {id:'stasis',title:'Поле стазиса',icon:'◷',desc:'Все препятствия и ворота движутся на 6% медленнее.',max:4},
+  {id:'phase',title:'Фазовый след',icon:'⌁',desc:'После столкновения неуязвимость длится на 0,18 секунды дольше.',max:3},
+  {id:'scanner',title:'Сканер-эхо',icon:'✦',desc:'Звёзды появляются на 8% чаще.',max:4}
+];
+const UPGRADES = [
+  {id:'engine', name:'Двигатель', icon:'⚡', max:5, level:1, base:45, step:35, desc:'Каждый уровень увеличивает скорость перемещения на 12%.', effect:l=>'Скорость +'+(l*12)+'%'},
+  {id:'magnet', name:'Магнит', icon:'✧', max:5, level:4, base:40, step:32, desc:'Сильно расширяет радиус сбора звёзд и энергии.', effect:l=>'Радиус сбора +'+(l*14)},
+  {id:'hull', name:'Корпус', icon:'⬡', max:5, level:6, base:55, step:42, desc:'Каждый уровень даёт одну дополнительную жизнь в начале заезда.', effect:l=>'Дополнительные жизни +'+l},
+  {id:'scanner', name:'Сканер', icon:'⌁', max:5, level:9, base:50, step:38, desc:'Чаще обнаруживает звёзды — больше кристаллов и повышений уровня в полёте.', effect:l=>'Частота звёзд +'+(l*12)+'%'},
+  {id:'reactor', name:'Реактор', icon:'✦', max:5, level:13, base:70, step:50, desc:'Увеличивает количество очков за время, проведённое в полёте.', effect:l=>'Очки за время +'+(l*10)+'%'},
+  {id:'shield', name:'Экранирование', icon:'◇', max:2, level:18, base:220, step:180, desc:'Дорогая защитная система: каждый уровень добавляет один заряд щита в начале полёта.', effect:l=>'Стартовые заряды щита +'+l}
+];
+const DEFAULT_PROFILE = () => ({
+  crystals:0,totalXp:0,unlockedShips:['scout'],selectedShip:'scout',
+  upgrades:{engine:0,magnet:0,hull:0,scanner:0,reactor:0,shield:0},
+  stats:{best:0,bestFlightSeconds:0,bestBosses:0,totalBosses:0,runs:0,totalStars:0,totalSeconds:0,totalScore:0},savedAt:0
+});
+function safeNumber(n,min=0,max=1e9){const v=Number(n);return Number.isFinite(v)?Math.max(min,Math.min(max,Math.floor(v))):min}
+function sanitizeProfile(raw){
+  const p=DEFAULT_PROFILE(); if(!raw||typeof raw!=='object')return p;
+  p.crystals=safeNumber(raw.crystals);p.totalXp=safeNumber(raw.totalXp);p.savedAt=safeNumber(raw.savedAt);
+  const known=new Set(SHIPS.map(s=>s.id));
+  p.unlockedShips=Array.isArray(raw.unlockedShips)?[...new Set(raw.unlockedShips.filter(id=>known.has(id)))]:['scout'];
+  if(!p.unlockedShips.includes('scout'))p.unlockedShips.unshift('scout');
+  p.selectedShip=p.unlockedShips.includes(raw.selectedShip)?raw.selectedShip:'scout';
+  for(const u of UPGRADES)p.upgrades[u.id]=safeNumber(raw.upgrades?.[u.id],0,u.max);
+  for(const k of Object.keys(p.stats))p.stats[k]=safeNumber(raw.stats?.[k]);
+  return p;
+}
+let profile=DEFAULT_PROFILE();
+function loadLocal(){try{const raw=localStorage.getItem(SAVE_KEY);if(raw)return sanitizeProfile(JSON.parse(raw));const legacy=DEFAULT_PROFILE();try{legacy.stats.best=safeNumber(localStorage.getItem('neonRaceBest'))}catch(e){}return legacy}catch(e){return DEFAULT_PROFILE()}}
+profile=loadLocal();
+let vkSdk=null, vkPlayer=null, cloudReady=false, cloudBusy=false, cloudQueued=false;
+let vkSdkInitialized=false,vkSdkLoadStarted=false,vkSaveTimer=null,vkFlushBusy=false,vkLastFlushAt=0,vkStorageError=null;
+let lastCloudSyncAt=0,lastStatsSyncAt=0,sdkInitialized=false,sdkLoadStarted=false;
+const REWARDED_AD_CRYSTALS=50;
+let rewardedAdBusy=false,rewardedAdGranted=false,rewardAdMessage='';
+const LEADERBOARDS={score:{id:'neon_race_score',title:'Лучший результат',description:'Максимальное количество очков за один полёт.',format:'number'},time:{id:'neon_race_flight_time',title:'Выносливость',description:'Самый продолжительный полёт. Значение отправляется в миллисекундах.',format:'time'},bosses:{id:'neon_race_bosses',title:'Охотник на боссов',description:'Максимум побеждённых боссов за один полёт.',format:'number'}};
+let activeLeaderboard='score',leaderboardCache={},leaderboardLoading=false,leaderboardMessage='',leaderboardLastFetch={},leaderboardRequestTimes=[],pendingLeaderboardKey=null,leaderboardSubmitQueue=Promise.resolve(),lastLeaderboardWriteAt=0,bossesThisRun=0;
+let W=0,H=0,dpr=1,state='menu',activeTab='home',score=0,scoreCarry=0,lives=3,elapsed=0,starsThisRun=0,runCrystals=0,runBonus=0,runXp=0,levelGained=0,best=profile.stats.best;
+let player={x:0,y:0,speed:390},rocks=[],stars=[],particles=[],powerups=[],gates=[],keys={},last=0,spawn=0,starSpawn=0,collisionCooldown=0,ghostUsed=false;
+let runLevel=1,runEnergy=0,runEnergyNeed=6,levelUpActive=false;
+let runBuild={thrusters:0,shield:0,repair:0,magnet:0,stasis:0,phase:0,scanner:0};
+let eventTimer=17,eventLeft=0,activeEvent=null,eventCycle=0,gateTimer=15,powerSpawnTimer=9,shieldHits=0,shieldTimer=0,activeBuff=null,buffTimer=0;
+let soundOn=(()=>{try{return localStorage.getItem('neonRaceSound_vk')!=='off'}catch(_){return true}})();
+let audio=null,masterGain=null,musicGain=null,sfxGain=null,musicTimer=null,musicStep=0,nextMusicTime=0,gameplayRunning=false,lastStarSfxAt=0;
+let vkEventsBound=false,platformPaused=false,pausedByUser=false,pausedByPlatform=false;
+function currentShip(){return SHIPS.find(s=>s.id===profile.selectedShip)||SHIPS[0]}
+function upgradeLevel(id){return profile.upgrades[id]||0}
+function maxLivesForRun(){return 3+upgradeLevel('hull')+(currentShip().lives||0)+(runBuild.repair||0)}
+function availableRunPerks(){const available=RUN_PERKS.filter(p=>(runBuild[p.id]||0)<p.max);for(let i=available.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[available[i],available[j]]=[available[j],available[i]]}return available.slice(0,3)}
+function openRunLevelUp(){levelUpActive=true;$('runLevelTitle').textContent=runLevel;const choices=availableRunPerks();$('runLevelChoices').innerHTML=translateMarkup(choices.map(p=>'<button class="runPerkCard" data-run-perk="'+p.id+'"><span class="runPerkIcon">'+p.icon+'</span><strong>'+p.title+'</strong><span>'+p.desc+'</span><small>ВЫБРАТЬ УСИЛЕНИЕ</small></button>').join(''));$('levelUpOverlay').classList.remove('hidden');updateHUD()}
+function gainRunEnergy(){runEnergy++;if(runEnergy>=runEnergyNeed){runEnergy-=runEnergyNeed;runLevel++;runEnergyNeed=6+runLevel*2;openRunLevelUp()}}
+function chooseRunPerk(id){if(!levelUpActive)return;const perk=RUN_PERKS.find(p=>p.id===id);if(!perk||(runBuild[id]||0)>=perk.max)return;runBuild[id]++;if(id==='shield'){shieldHits=Math.min(3,shieldHits+1);shieldTimer=28+upgradeLevel('shield')*5}if(id==='repair')lives=Math.min(maxLivesForRun(),lives+1);levelUpActive=false;$('levelUpOverlay').classList.add('hidden');updateHUD();updateRunStatus();playSfx('buy')}
+function nextUpgradeCost(u){return u.base+u.step*upgradeLevel(u.id)}
+function levelInfo(totalXp=profile.totalXp){let level=1,remaining=totalXp,need=100;while(remaining>=need&&level<1000){remaining-=need;level++;need=100+(level-1)*50}return {level,into:remaining,need}}
+function saveLocal(){
+  profile.savedAt=Date.now();
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(profile));setSaveStatus(cloudReady?'Облачное и локальное сохранение включены':'Прогресс сохранён на устройстве')}
+  catch(e){setSaveStatus('Не удалось сохранить локальный прогресс');console.warn('Local save failed',e)}
+  updateWallet();
+}
+function platformStatsSnapshot(){return {
+  neonRaceBestScore:Number(profile.stats.best)||0,
+  neonRaceTotalXp:Number(profile.totalXp)||0,
+  neonRaceCrystals:Number(profile.crystals)||0,
+  neonRaceRuns:Number(profile.stats.runs)||0
+}}
+async function syncPlatformStats(force=false){
+  // VK exposes platform-level basic metrics, but no documented client setStats API
+  // for custom per-player counters. Game statistics are persisted in profile/cloud.
+  return false;
+}
+function scheduleCloudSave(){
+  if(!vkSdk?.storage)return;
+  cloudQueued=true;
+  if(vkSaveTimer)clearTimeout(vkSaveTimer);
+  vkSaveTimer=setTimeout(async()=>{
+    vkSaveTimer=null;
+    try{
+      vkSdk.storage.set('neonRaceProfile_vk_v1',JSON.parse(JSON.stringify(profile)));
+      const result=await vkSdk.storage.flush();
+      if(!result?.success)throw new Error(result?.error||'VK storage write failed');
+      lastCloudSyncAt=Date.now();cloudQueued=false;vkStorageError=null;
+      setSaveStatus('Облачное сохранение VK синхронизировано');
+    }catch(e){console.warn('VK storage write failed',e);setSaveStatus('Облако VK временно недоступно; локальный прогресс сохранён')}
+  },500);
+}
+async function syncVKCloud(force=true){
+  if(!vkSdk?.storage){setSaveStatus('Облачные сохранения VK доступны после подключения VK Bridge.');return false}
+  try{
+    if(vkSaveTimer){clearTimeout(vkSaveTimer);vkSaveTimer=null}
+    vkSdk.storage.set('neonRaceProfile_vk_v1',JSON.parse(JSON.stringify(profile)));
+    cloudQueued=false;
+    if(vkFlushBusy)return (await vkSdk.storage.flush())?.success===true;
+    vkFlushBusy=true;
+    const result=await vkSdk.storage.flush();
+    if(result?.success){
+      lastCloudSyncAt=Date.now();vkLastFlushAt=Date.now();vkStorageError=null;
+      setSaveStatus(force?'Облачное сохранение VK синхронизировано':'Прогресс сохранён в облаке VK');
+      return true;
+    }
+    vkStorageError=result?.reason||'VK_STORAGE_ERROR';
+    setSaveStatus('Не удалось сохранить в облако VK. Локальный прогресс сохранён.');
+    return false;
+  }catch(e){console.warn('VK cloud save failed',e);setSaveStatus('Не удалось сохранить в облако VK. Локальный прогресс сохранён.');return false}
+  finally{vkFlushBusy=false}
+}
+function saveProgress(cloud=false){
+  saveLocal();
+  if(cloud||(vkSdk&&Date.now()-lastCloudSyncAt>20000))scheduleCloudSave();
+}
+function rewardAdButton(source='menu'){
+  const available=!!(vkSdk?.ads?.rewarded?.isSupported);
+  const label=rewardedAdBusy?'РЕКЛАМА ОТКРЫТА…':available?`СМОТРЕТЬ ВИДЕО · +${REWARDED_AD_CRYSTALS} ✦`:'РЕКЛАМА НЕДОСТУПНА';
+  return `<section class="rewardAdCard"><div class="rewardAdCopy"><div class="rewardAdTitle">🎬 Бонус за просмотр рекламы</div><div class="rewardAdText">Посмотри добровольный рекламный ролик и получи ${REWARDED_AD_CRYSTALS} кристаллов. Награда начисляется только после подтверждения просмотра рекламного ролика платформой.</div><div class="rewardAdMessage" aria-live="polite">${rewardAdMessage|| (available?'Видео по желанию · награду можно получить после просмотра':'Доступно после подключения SDK и монетизации в Консоли')}</div></div><button class="primary rewardAdButton" data-action="reward-ad" data-source="${source}" ${!available||rewardedAdBusy?'disabled':''}>${label}</button></section>`;
+}
+function finishRewardedAd(wasShown=false,error=false){
+  if(!rewardedAdBusy)return;
+  rewardedAdBusy=false;
+  if(rewardedAdGranted){rewardAdMessage=`Награда получена: +${REWARDED_AD_CRYSTALS} кристаллов!`}
+  else if(error){rewardAdMessage='Не удалось загрузить видео. Попробуй позже.'}
+  else if(wasShown){rewardAdMessage='Просмотр не был засчитан — награда не начислена.'}
+  else{rewardAdMessage='Реклама сейчас недоступна. Попробуй позже.'}
+  if(soundOn&&audio&&audio.state==='suspended')audio.resume().catch(()=>{});
+  if(state==='play')startMusic();
+  renderScreen();
+}
+async function showRewardedAd(source='menu'){
+  if(rewardedAdBusy)return;
+  const ad=vkSdk?.ads?.rewarded;
+  if(!ad||!ad.isSupported){rewardAdMessage='Реклама сейчас недоступна. Попробуй позже.';renderScreen();return}
+  rewardedAdBusy=true;rewardedAdGranted=false;rewardAdMessage='Подготавливаем рекламное видео…';renderScreen();
+  const wasPlaying=state==='play';
+  try{
+    const canShow=await ad.canShow();
+    if(!canShow){finishRewardedAd(false,false);return}
+    if(wasPlaying){pausedByUser=false;pausedByPlatform=false;pauseInterface(true)}
+    stopMusic();if(audio&&audio.state==='running')await audio.suspend().catch(()=>{});
+    const result=await ad.show();
+    if(result?.rendered===true&&result?.reward===true&&!rewardedAdGranted){
+      rewardedAdGranted=true;profile.crystals+=REWARDED_AD_CRYSTALS;saveProgress(true);updateWallet();updateHUD();
+    }
+    if(wasPlaying&&state==='paused'&&!platformPaused&&!pausedByUser)resumeInterface(true);
+    finishRewardedAd(result?.rendered===true,false);
+  }catch(error){
+    console.warn('VK rewarded ad failed',error);
+    if(wasPlaying&&state==='paused'&&!platformPaused&&!pausedByUser)resumeInterface(true);
+    finishRewardedAd(false,true);
+  }
+}
+function isPlayerAuthorized(){return !!vkSdk?.player?.isAuthorized;}
+async function mergeCloudProfile(){
+  if(!vkSdk?.storage)return;
+  try{
+    const cloud=vkSdk.storage.get('neonRaceProfile_vk_v1');
+    if(cloud&&Number(cloud.savedAt||0)>Number(profile.savedAt||0)){
+      profile=sanitizeProfile(cloud);best=profile.stats.best;saveLocal();renderScreen();
+    }else if(profile.savedAt>0){scheduleCloudSave()}
+    cloudReady=true;setSaveStatus('Облачное и локальное сохранение VK включены');
+  }catch(e){console.warn('VK cloud read failed',e);setSaveStatus('Локальный прогресс сохранён; облако VK временно недоступно')}
+}
+async function authorizeVKPlayer(){return false;}
+function bindVKEvents(){
+  if(vkEventsBound||!window.vkBridge||typeof window.vkBridge.subscribe!=='function')return;
+  vkEventsBound=true;
+  window.vkBridge.subscribe(event=>{
+    const type=event?.detail?.type;
+    if(type==='VKWebAppViewHide'){
+      if(state==='play'){pausedByUser=false;pausedByPlatform=true;pauseInterface(true)}
+      stopMusic();if(audio?.state==='running')audio.suspend().catch(()=>{});
+    }else if(type==='VKWebAppViewRestore'){
+      if(state==='paused'&&pausedByPlatform){pausedByPlatform=false;platformPaused=false;resumeInterface(true)}
+    }
+  });
+}
+async function createVKPlatformSdk(bridge){
+  if(!bridge||typeof bridge.send!=='function')throw new Error('VK Bridge is not available');
+  await bridge.send('VKWebAppInit',{});
+  const query=new URLSearchParams(location.search);
+  const hash=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
+  const isOK=query.get('vk_client')==='ok'||hash.get('vk_client')==='ok';
+  const cloudKey='neonRaceProfile_vk_v1';
+  const cache=Object.create(null);
+  let writeQueue=Promise.resolve();
+
+  try{
+    const response=await bridge.send('VKWebAppStorageGet',{keys:[cloudKey]});
+    const rows=Array.isArray(response?.keys)?response.keys:[];
+    const row=rows.find(item=>item?.key===cloudKey);
+    if(row&&row.value!==undefined&&row.value!==null){
+      try{cache[cloudKey]=JSON.parse(row.value)}catch(_){cache[cloudKey]=row.value}
+    }
+  }catch(error){console.warn('VK Bridge storage read unavailable; local save remains active',error)}
+
+  async function supports(method){
+    try{
+      if(typeof bridge.supportsAsync==='function')return await bridge.supportsAsync(method);
+      if(typeof bridge.supports==='function')return bridge.supports(method);
+    }catch(error){console.info('VK Bridge capability check failed:',method,error)}
+    return false;
+  }
+  const adMethodsSupported=await supports('VKWebAppCheckNativeAds')&&await supports('VKWebAppShowNativeAds');
+  let lastInterstitialAt=0;
+  function makeAd(format){
+    return {
+      isSupported:adMethodsSupported,
+      async canShow(){
+        if(!adMethodsSupported)return false;
+        if(format==='interstitial'&&Date.now()-lastInterstitialAt<120000)return false;
+        const available=await bridge.send('VKWebAppCheckNativeAds',{ad_format:format});
+        return available?.result===true;
+      },
+      async show(){
+        if(!adMethodsSupported)return {rendered:false,reward:false,reason:'NOT_SUPPORTED'};
+        const response=await bridge.send('VKWebAppShowNativeAds',{ad_format:format});
+        const rendered=response?.result===true;
+        if(rendered&&format==='interstitial')lastInterstitialAt=Date.now();
+        return {rendered,reward:format==='reward'&&rendered,reason:rendered?undefined:'NOT_RENDERED'};
+      }
+    };
+  }
+
+  return {
+    platform:isOK?'ok':'vk',
+    player:{isAuthorized:true,id:query.get('vk_user_id')||hash.get('vk_user_id')||null},
+    storage:{
+      get(key){return Object.prototype.hasOwnProperty.call(cache,key)?cache[key]:null},
+      set(key,value){
+        const serialized=typeof value==='string'?value:JSON.stringify(value);
+        cache[key]=value;
+        writeQueue=writeQueue.catch(()=>{}).then(async()=>{
+          const response=await bridge.send('VKWebAppStorageSet',{key,value:serialized});
+          if(response?.result===false)throw new Error('VK storage rejected the write');
+          return response;
+        });
+        writeQueue.catch(error=>{vkStorageError='VK_STORAGE_ERROR';console.warn('VK Bridge storage write failed',error)});
+        return true;
+      },
+      async flush(){
+        try{await writeQueue;return {success:true}}
+        catch(error){return {success:false,reason:'VK_STORAGE_ERROR',error:String(error?.message||error)}}
+      }
+    },
+    ads:{rewarded:makeAd('reward'),fullscreen:makeAd('interstitial')},
+    on(){return ()=>{}},
+    gameStarted(){/* VK Mini Apps does not require a separate gameStarted call. */}
+  };
+}
+async function initSDK(){
+  if(vkSdkInitialized||!window.vkBridge)return;
+  try{
+    vkSdk=await createVKPlatformSdk(window.vkBridge);
+    vkSdkInitialized=true;vkPlayer=vkSdk.player||null;
+    bindVKEvents();
+    await mergeCloudProfile();
+    setSaveStatus(vkSdk.platform==='ok'?'Игра подключена к Одноклассникам через VK Bridge.':'Игра подключена к VK Games через VK Bridge.');
+    renderScreen();
+  }catch(e){
+    console.warn('VK Bridge initialization failed',e);
+    setSaveStatus('VK Bridge недоступен; игра работает с локальным сохранением');
+  }
+}
+function loadSDK(){
+  if(vkSdkLoadStarted||vkSdkInitialized)return;
+  const host=location.hostname;
+  const local=location.protocol==='file:'||host==='localhost'||host==='127.0.0.1'||host==='0.0.0.0';
+  if(local){setSaveStatus('Локальный режим: прогресс сохраняется на устройстве; VK Bridge включается в клиенте VK или ОК.');return}
+  if(window.vkBridge){initSDK();return}
+  vkSdkLoadStarted=true;
+  const sources=[
+    'https://unpkg.com/@vkontakte/vk-bridge@3.0.2/dist/browser.min.js',
+    'https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@3.0.2/dist/browser.min.js'
+  ];
+  const tryLoad=index=>{
+    if(index>=sources.length){setSaveStatus('VK Bridge не загрузился; доступно локальное сохранение');return}
+    const script=document.createElement('script');
+    script.src=sources[index];script.async=true;
+    script.onload=()=>{
+      if(window.vkBridge){initSDK();return}
+      script.remove();tryLoad(index+1);
+    };
+    script.onerror=()=>{script.remove();tryLoad(index+1)};
+    document.head.appendChild(script);
+  };
+  tryLoad(0);
+}
+function gameplayStart(){/* VK SDK has no GameplayAPI method. */}
+function gameplayStop(){/* VK SDK has no GameplayAPI method. */}
+function pauseInterface(reportGameplay=true){
+  state='paused';
+  if(reportGameplay)gameplayStop();
+  stopMusic();
+  if(audio?.state==='running')audio.suspend().catch(()=>{});
+  $('menuOverlay').classList.remove('hidden');$('gameHud').classList.add('hidden');$('touch').classList.add('hidden');$('runStatus').classList.add('hidden');
+  renderScreen();
+}
+function resumeInterface(reportGameplay=true){
+  if(state!=='paused'||platformPaused||pausedByUser)return;
+  state='play';
+  $('menuOverlay').classList.add('hidden');$('gameHud').classList.remove('hidden');$('touch').classList.remove('hidden');$('runStatus').classList.remove('hidden');
+  updateRunStatus();
+  if(audio?.state==='suspended')audio.resume().then(()=>{if(state==='play')startMusic()}).catch(()=>{});else startMusic();
+  if(reportGameplay)gameplayStart();
+  last=performance.now();
+}
+function handleVKPause(){/* Not used in the VK build. */}
+function handleVKResume(){/* Not used in the VK build. */}
+function bindVKEvents(){/* Not used in the VK build. */}
+function ensureAudio(){
+  if(!soundOn)return false;
+  try{
+    const AudioCtor=window.AudioContext||window.webkitAudioContext;if(!AudioCtor)return false;
+    if(!audio){
+      audio=new AudioCtor();masterGain=audio.createGain();musicGain=audio.createGain();sfxGain=audio.createGain();
+      masterGain.gain.value=.78;musicGain.gain.value=.22;sfxGain.gain.value=.82;
+      musicGain.connect(masterGain);sfxGain.connect(masterGain);masterGain.connect(audio.destination);
+    }
+    if(audio.state==='suspended')audio.resume().catch(()=>{});
+    if(masterGain)masterGain.gain.setTargetAtTime(.78,audio.currentTime,.04);
+    
+    if(sfxGain)sfxGain.gain.setTargetAtTime(.82,audio.currentTime,.04);
+    return true;
+  }catch(e){console.warn('Web Audio indisponible',e);return false}
+}
+function synthNote(freq,when,duration,wave='sine',volume=.06,destination=sfxGain,endFreq=null){
+  if(!audio||!destination||!Number.isFinite(freq)||freq<=0)return;
+  try{
+    const osc=audio.createOscillator(),amp=audio.createGain();osc.type=wave;osc.frequency.setValueAtTime(freq,when);
+    if(endFreq&&endFreq>0)osc.frequency.exponentialRampToValueAtTime(endFreq,when+Math.max(.025,duration*.85));
+    amp.gain.setValueAtTime(.0001,when);amp.gain.linearRampToValueAtTime(volume,when+Math.min(.025,duration*.22));amp.gain.exponentialRampToValueAtTime(.0001,when+duration);
+    osc.connect(amp);amp.connect(destination);osc.start(when);osc.stop(when+duration+.025);
+  }catch(e){}
+}
+function tone(freq=500,dur=.08,type='sine'){if(!ensureAudio())return;synthNote(freq,audio.currentTime,dur,type,.045,sfxGain,freq*.92)}
+function playSfx(name){
+  if(!ensureAudio())return;
+  const now=audio.currentTime;
+  const patterns={
+    ui:[[560,.055,'sine',.025],[760,.07,'sine',.018,.045]],
+    start:[[392,.12,'triangle',.045],[523,.12,'triangle',.045,.11],[659,.16,'sine',.05,.22],[784,.22,'sine',.04,.34]],
+    star:[[880,.075,'sine',.035],[1174,.09,'sine',.028,.045]],
+    shield:[[520,.11,'triangle',.05],[780,.13,'sine',.045,.075],[1046,.17,'sine',.035,.15]],
+    shieldHit:[[620,.11,'triangle',.055],[880,.16,'sine',.04,.05]],
+    magnet:[[440,.13,'sine',.045],[660,.13,'triangle',.04,.08],[990,.18,'sine',.03,.16]],
+    slow:[[392,.16,'triangle',.05],[330,.19,'sine',.04,.12],[262,.22,'sine',.03,.24]],
+    phase:[[740,.08,'sine',.04],[520,.16,'triangle',.04,.07]],
+    hit:[[150,.19,'sawtooth',.055,0,70],[92,.22,'square',.035,.025,48]],
+    event:[[392,.12,'triangle',.04],[523,.13,'triangle',.045,.10],[659,.2,'sine',.04,.20]],
+    eventEnd:[[660,.09,'sine',.03],[880,.13,'sine',.035,.08]],
+    gate:[[587,.09,'triangle',.04],[784,.11,'sine',.04,.07],[1046,.16,'sine',.03,.14]],
+    buy:[[523,.10,'triangle',.04],[659,.10,'triangle',.04,.08],[784,.16,'sine',.05,.16],[1046,.2,'sine',.04,.26]],
+    select:[[494,.08,'sine',.03],[740,.11,'sine',.035,.07]],
+    finish:[[440,.16,'triangle',.04],[392,.18,'triangle',.04,.14],[330,.22,'sine',.04,.30],[262,.32,'sine',.035,.48]]
+  };
+  const seq=patterns[name]||patterns.ui;
+  for(const [f,d,w,v,offset=0,endF] of seq)synthNote(f,now+offset,d,w,v,sfxGain,endF||null);
+}
+const MUSIC_CHORDS=[0,-5,-3,-7];
+const MUSIC_PATTERN=[0,null,7,3,null,10,7,null,3,null,7,10,null,7,3,null];
+function scheduleMusicStep(){
+  if(!audio||!soundOn||state!=='play'){stopMusic();return}
+  const step=musicStep%64,bar=Math.floor(step/16),root=130.81*Math.pow(2,MUSIC_CHORDS[bar]/12),t=nextMusicTime;
+  if(step%16===0){
+    [1,Math.pow(2,3/12),Math.pow(2,7/12)].forEach((ratio,i)=>synthNote(root*ratio,t,3.65,'sine',i===0?.012:.008,musicGain));
+  }
+  if(step%2===0)synthNote(root*.5,t,.25,'triangle',.045,musicGain,root*.48);
+  const interval=MUSIC_PATTERN[step%16];
+  if(interval!==null)synthNote(root*2*Math.pow(2,interval/12),t,.20,'sine',.033,musicGain);
+  if(step%8===4)synthNote(root*4*Math.pow(2,7/12),t,.12,'triangle',.018,musicGain);
+  musicStep++;nextMusicTime+=60/108/2;
+}
+function startMusic(){
+  if(!soundOn||state!=='play'||!ensureAudio()||musicTimer!==null)return;
+  musicGain.gain.setTargetAtTime(.22,audio.currentTime,.12);
+  musicStep=0;nextMusicTime=audio.currentTime+.06;for(let i=0;i<4;i++)scheduleMusicStep();
+  musicTimer=setInterval(()=>{if(!audio||audio.state!=='running')return;let guard=0;while(nextMusicTime<audio.currentTime+.32&&guard++<8)scheduleMusicStep()},70);
+}
+function stopMusic(){if(musicTimer!==null){clearInterval(musicTimer);musicTimer=null}if(audio&&musicGain){try{musicGain.gain.cancelScheduledValues(audio.currentTime);musicGain.gain.setTargetAtTime(0,audio.currentTime,.035)}catch(e){}}}
+function updateSoundButtons(){const label=soundOn?'♫':'♪',aria=translateText(soundOn?'Выключить звук':'Включить звук'),title=translateText(soundOn?'Звук включён':'Звук выключен');for(const id of ['soundBtn','menuSoundBtn']){const el=$(id);if(el){el.textContent=label;if(el.setAttribute)el.setAttribute('aria-label',aria);el.title=title}}}
+function setSoundEnabled(enabled){soundOn=!!enabled;try{localStorage.setItem('neonRaceSound_vk',soundOn?'on':'off')}catch(e){}updateSoundButtons();if(!soundOn){stopMusic();if(audio&&masterGain)masterGain.gain.setTargetAtTime(0,audio.currentTime,.03)}else{ensureAudio();if(state==='play')startMusic();playSfx('ui')}}
+function playerBounds(){const minX=22,maxX=Math.max(minX,W-22),minY=Math.min(76,Math.max(52,H*.15)),maxY=Math.max(minY+24,H-82);return {minX,maxX,minY,maxY}}
+function clampPlayer(){const b=playerBounds();player.x=Math.max(b.minX,Math.min(b.maxX,player.x));player.y=Math.max(b.minY,Math.min(b.maxY,player.y))}
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);player.y=H*.82;player.x=player.x||W/2;clampPlayer()}
+addEventListener('resize',resize);resize();
+function updateWallet(){$('walletCrystals').textContent=profile.crystals;$('walletLevel').textContent=levelInfo().level;if($('hudCrystals'))$('hudCrystals').textContent=profile.crystals}
+function setScreen(tab){activeTab=tab;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));renderScreen();if(tab==='leaderboards')loadLeaderboard(activeLeaderboard)}
+function showMenu(tab='home'){state='menu';pausedByUser=false;pausedByPlatform=false;stopMusic();gameplayStop();$('gameHud').classList.add('hidden');$('touch').classList.add('hidden');$('runStatus').classList.add('hidden');$('menuOverlay').classList.remove('hidden');setScreen(tab)}
+function visualShip(ship){return `<div class="shipVisual" style="--ship-color:${ship.color}"><div class="shipShape"></div></div>`}
+function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function formatLeaderboardValue(key,value){
+  const n=Math.max(0,Number(value)||0);
+  if(key==='time'){const seconds=Math.floor(n/1000),h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60),s=seconds%60;return h?`${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${m}:${String(s).padStart(2,'0')}`}
+  return Math.floor(n).toLocaleString(currentLanguage==='en'?'en-US':'ru-RU');
+}
+function renderLeaderboardRows(key){return '<div class="emptyHint">Глобальные таблицы рекордов пока не подключены в этой сборке. Личные рекорды сохраняются в профиле и облаке игры.</div>'}
+function renderLeaderboards(){return `<h2 class="sectionTitle">Рекорды пилота</h2><p class="lead">Твои результаты сохраняются в профиле и синхронизируются через облако VK.</p><section class="subCard leaderboardPanel"><div class="leaderboardTitle">Глобальные таблицы</div><div class="emptyHint" style="margin-top:12px">В опубликованной документации SDK VK нет API для пользовательских таблиц лидеров. Если позже понадобится общий рейтинг всех игроков, его можно подключить отдельным серверным сервисом.</div></section>`}
+async function loadLeaderboard(key=activeLeaderboard,force=false){return false}
+function queueBestLeaderboardScores(onlyKeys=null){/* VK SDK does not document a leaderboard API. */}
+function recordBossDefeat(){bossesThisRun++;}
+
+function renderHome(){const ship=currentShip(),lv=levelInfo(),pct=lv.into/lv.need*100;return `
+  <div class="homeGrid">
+   <section class="featureCard">
+    <div><div class="muted" style="font-size:12px;font-weight:850;letter-spacing:1.4px">ТВОЙ КОРАБЛЬ</div><div class="shipShow" style="margin-top:12px">${visualShip(ship)}<div><div class="shipName">${ship.name}</div><div class="shipDesc">${ship.desc}</div><div class="smallText" style="margin-top:7px">${ship.perk}</div></div></div></div>
+    <div class="buttonRow"><button class="primary" data-action="start-run" style="flex:1">НАЧАТЬ ПОЛЁТ</button><button class="secondary" data-tab="garage">АНГАР</button></div>
+   </section>
+   <section class="subCard">
+    <div class="muted" style="font-size:12px;font-weight:850;letter-spacing:1.2px">ПРОГРЕСС ПИЛОТА</div>
+    <div style="display:flex;justify-content:space-between;align-items:end;margin:12px 0 7px"><div><div class="muted" style="font-size:12px">УРОВЕНЬ</div><div style="font-size:34px;font-weight:1000;color:var(--cyan)">${lv.level}</div></div><div style="text-align:right;font-size:12px;color:#a9bbdc">${lv.into} / ${lv.need} XP</div></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="miniNote">Звёзды дают опыт прямо во время полёта: при повышении уровня выбери одно из трёх усилений. Опыт пилота и кристаллы сохраняются между забегами.</div>
+    <div class="statsRow"><div class="statCard"><div class="statLabel">ЛУЧШИЙ СЧЁТ</div><div class="statValue">${profile.stats.best}</div></div><div class="statCard"><div class="statLabel">ПОЛЁТОВ</div><div class="statValue">${profile.stats.runs}</div></div></div>
+   </section>
+  </div>
+  ${rewardAdButton('menu')}
+  <p class="lead" style="margin:14px 2px 0">Только уклонение — никаких атак и оружия. Собирай звёзды, чтобы повышать уровень прямо в полёте и выбирать одно из трёх усилений: скорость, щит, ремонт, магнит или замедление препятствий. Открывай корабли и усиливай их в мастерской.</p>`}
+function renderGarage(){const lv=levelInfo().level;return `<h2 class="sectionTitle">Ангар кораблей</h2><p class="lead">Покупай корабли за кристаллы. У каждого — своя особенность. Купленный корабль можно выбирать перед каждым полётом.</p><div class="shipGrid">${SHIPS.map(s=>{const owned=profile.unlockedShips.includes(s.id),selected=profile.selectedShip===s.id,levelOk=lv>=s.level,canBuy=owned|| (levelOk&&profile.crystals>=s.price);let label=selected?'ВЫБРАН':owned?'ВЫБРАТЬ':!levelOk?`НУЖЕН УР. ${s.level}`:`КУПИТЬ · ${s.price} ✦`;return `<article class="shipCard ${selected?'selected':''}">${visualShip(s)}<h3>${s.name}</h3><p>${s.desc}</p><div class="shipMeta">${s.perk}</div><button class="${selected?'secondary':'primary'}" data-action="${owned?'select-ship':'buy-ship'}" data-id="${s.id}" ${selected||!canBuy?'disabled':''}>${label}</button></article>`}).join('')}</div><p class="miniNote">Кристаллы зарабатываются в обычных заездах. Донат, платные предметы и внешние ассеты не используются.</p>`}
+function renderUpgrades(){const pilotLevel=levelInfo().level;return `<h2 class="sectionTitle">Мастерская улучшений</h2><p class="lead">Улучшения действуют постоянно. Новые системы мастерской открываются по мере роста уровня пилота.</p><div class="upgradeGrid">${UPGRADES.map(u=>{const lvl=upgradeLevel(u.id),maxed=lvl>=u.max,levelLocked=pilotLevel<u.level&&lvl===0,cost=nextUpgradeCost(u),affordable=profile.crystals>=cost;return `<article class="upgradeCard"><div class="upgradeHead"><div class="upgradeIcon">${u.icon}</div><div style="flex:1"><h3>${u.name}</h3><div class="smallText">Уровень ${lvl} / ${u.max} · ${u.effect(lvl)}</div></div></div><p>${u.desc}</p>${levelLocked?`<div class="smallText">Откроется на уровне ${u.level}</div>`:''}<div class="levelDots">${Array.from({length:u.max},(_,i)=>`<i class="${i<lvl?'on':''}"></i>`).join('')}</div><div class="upgradeFoot"><span class="smallText">${maxed?'МАКСИМУМ':`Цена: ${cost} ✦`}</span><button class="${maxed?'secondary':'primary'}" data-action="buy-upgrade" data-id="${u.id}" ${maxed||levelLocked||!affordable?'disabled':''}>${maxed?'МАКС.':levelLocked?'ЗАКРЫТО':'УЛУЧШИТЬ'}</button></div></article>`}).join('')}</div>`}
+function renderPilot(){const lv=levelInfo(),pct=lv.into/lv.need*100,authorized=isPlayerAuthorized();return `<h2 class="sectionTitle">Профиль пилота</h2><p class="lead">Твой опыт, рекорды и коллекция сохраняются после закрытия игры. </p><section class="subCard" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><div class="muted" style="font-size:12px">ТЕКУЩИЙ УРОВЕНЬ</div><div style="font-size:40px;font-weight:1000;color:var(--cyan)">${lv.level}</div></div><div style="text-align:right"><div style="font-size:12px;color:#9eb2d6">ОБЩИЙ ОПЫТ</div><strong style="font-size:21px">${profile.totalXp} XP</strong></div></div><div class="progressMeta"><span>До уровня ${lv.level+1}</span><span>${lv.into} / ${lv.need} XP</span></div><div class="bar"><i style="width:${pct}%"></i></div></section><div class="profileGrid"><div class="statCard"><div class="statLabel">КРИСТАЛЛЫ</div><div class="statValue">✦ ${profile.crystals}</div></div><div class="statCard"><div class="statLabel">ЛУЧШИЙ СЧЁТ</div><div class="statValue">${profile.stats.best}</div></div><div class="statCard"><div class="statLabel">ЗАЕЗДЫ</div><div class="statValue">${profile.stats.runs}</div></div><div class="statCard"><div class="statLabel">СОБРАНО ЗВЁЗД</div><div class="statValue">${profile.stats.totalStars}</div></div><div class="statCard"><div class="statLabel">ЛУЧШИЙ ПОЛЁТ</div><div class="statValue">${Math.floor(profile.stats.bestFlightSeconds/60)} мин</div></div><div class="statCard"><div class="statLabel">БОССЫ</div><div class="statValue">${profile.stats.totalBosses}</div></div><div class="statCard"><div class="statLabel">ОТКРЫТО КОРАБЛЕЙ</div><div class="statValue">${profile.unlockedShips.length} / 8</div></div></div><div class="buttonRow"><button class="secondary" data-action="sync-cloud" ${!vkSdk?.storage?'disabled':''}>СИНХРОНИЗИРОВАТЬ ОБЛАКО</button>${vkSdk&&!authorized?'<button class="secondary" data-action="authorize-player">ВОЙТИ В VK</button>':''}</div><p class="miniNote">${authorized?'VK Bridge подключён. Прогресс сохраняется в облаке платформы.':'Авторизация VK необязательна. Облачное хранилище доступно и гостям; вход помогает сохранить прогресс между устройствами.'}</p>`}
+function renderResults(){const lv=levelInfo();return `<div class="resultHero"><div class="medal">✦</div><h2>ПОЛЁТ ЗАВЕРШЁН</h2><p class="muted" style="margin:0">Отличная попытка, пилот!</p></div><div class="resultGrid"><div class="resultCard"><strong>${score}</strong><span>ОЧКИ</span></div><div class="resultCard"><strong>${starsThisRun}</strong><span>ЗВЁЗДЫ</span></div><div class="resultCard"><strong>${Math.floor(elapsed)}${currentLanguage==='en'?'s':'с'}</strong><span>ВРЕМЯ</span></div><div class="resultCard"><strong>${bossesThisRun}</strong><span>БОССЫ</span></div></div><div class="resultRewards"><div>Получено кристаллов за звёзды и бонусы: <b style="color:var(--gold)">+${runCrystals}</b></div><div>Получено опыта: <b style="color:var(--cyan)">+${runXp} XP</b></div>${levelGained>0?`<div class="levelUp">НОВЫЙ УРОВЕНЬ! Теперь ты пилот ${lv.level}-го уровня. Бонус: +${levelGained} наградных кристаллов.</div>`:''}<div style="margin-top:5px">Всего кристаллов: <b style="color:var(--gold)">${profile.crystals}</b></div></div>${rewardAdButton('results')}<div class="buttonRow"><button class="primary" data-action="start-run" style="flex:1">ЕЩЁ ОДИН ПОЛЁТ</button><button class="secondary" data-action="go-home">В АНГАР</button></div>`}
+function renderPause(){return `<div class="resultHero"><div class="medal">Ⅱ</div><h2>ПАУЗА</h2><p class="muted">Астероиды подождут. Можешь продолжить или вернуться в ангар.</p></div><div class="buttonRow"><button class="primary" data-action="resume" style="flex:1">ПРОДОЛЖИТЬ</button><button class="secondary" data-action="go-home">В АНГАР</button></div>`}
+function renderScreen(){updateWallet();$('tabs').classList.toggle('hidden',state==='over'||state==='paused');const area=$('screenContent');let markup=state==='over'?renderResults():state==='paused'?renderPause():activeTab==='home'?renderHome():activeTab==='garage'?renderGarage():activeTab==='upgrades'?renderUpgrades():activeTab==='leaderboards'?renderLeaderboards():renderPilot();area.innerHTML=translateMarkup(markup)}
+function startRun(){if(platformPaused)return;pausedByUser=false;pausedByPlatform=false;score=0;scoreCarry=0;elapsed=0;starsThisRun=0;bossesThisRun=0;runCrystals=0;runBonus=0;runXp=0;levelGained=0;runLevel=1;runEnergy=0;runEnergyNeed=6;levelUpActive=false;runBuild={thrusters:0,shield:0,repair:0,magnet:0,stasis:0,phase:0,scanner:0};const ship=currentShip();lives=maxLivesForRun();ghostUsed=false;collisionCooldown=0;spawn=0;starSpawn=.8;rocks=[];stars=[];particles=[];powerups=[];gates=[];eventTimer=12;eventLeft=0;activeEvent=null;eventCycle=0;gateTimer=12;powerSpawnTimer=9;shieldHits=Math.min(2,upgradeLevel('shield')+(ship.startShield||0));shieldTimer=shieldHits?28+upgradeLevel('shield')*5:0;activeBuff=null;buffTimer=0;$('levelUpOverlay').classList.add('hidden');player.x=W/2;player.y=H*.82;clampPlayer();state='play';$('menuOverlay').classList.add('hidden');$('gameHud').classList.remove('hidden');$('touch').classList.remove('hidden');$('runStatus').classList.remove('hidden');$('pauseBtn').textContent='Ⅱ';updateHUD();updateRunStatus();gameplayStart();ensureAudio();playSfx('start');startMusic()}
+function pauseRun(){
+  if(levelUpActive)return;
+  if(state==='play'){
+    pausedByUser=true;pausedByPlatform=false;
+    pauseInterface(true);
+  }else if(state==='paused'){
+    pausedByUser=false;
+    if(!platformPaused){pausedByPlatform=false;resumeInterface(true)}
+  }
+}
+function finishRun(){
+  if(state!=='play'&&state!=='paused')return;
+  levelUpActive=false;$('levelUpOverlay').classList.add('hidden');
+  state='over';pausedByUser=false;pausedByPlatform=false;stopMusic();gameplayStop();
+  const before=levelInfo().level;
+  const previousBest=profile.stats.best,previousTime=profile.stats.bestFlightSeconds,previousBosses=profile.stats.bestBosses;
+  profile.stats.runs++;profile.stats.totalSeconds+=Math.floor(elapsed);profile.stats.totalScore+=score;
+  profile.stats.best=Math.max(profile.stats.best,score);
+  profile.stats.bestFlightSeconds=Math.max(profile.stats.bestFlightSeconds,Math.floor(elapsed));
+  profile.stats.totalBosses+=bossesThisRun;profile.stats.bestBosses=Math.max(profile.stats.bestBosses,bossesThisRun);
+  const improvedLeaderboards=[];
+  if(profile.stats.best>previousBest)improvedLeaderboards.push('score');
+  if(profile.stats.bestFlightSeconds>previousTime)improvedLeaderboards.push('time');
+  if(profile.stats.bestBosses>previousBosses)improvedLeaderboards.push('bosses');
+  best=profile.stats.best;
+  const timeBonus=Math.floor(elapsed/40)*2,scoreBonus=Math.floor(score/6000)*2;
+  runBonus=timeBonus+scoreBonus;profile.crystals+=runBonus;runCrystals+=runBonus;
+  runXp=Math.floor(elapsed*1.35+score/55+starsThisRun*4);profile.totalXp+=runXp;
+  const after=levelInfo().level;levelGained=Math.max(0,after-before);
+  if(levelGained){const levelReward=levelGained*12;profile.crystals+=levelReward;runCrystals+=levelReward}
+  saveProgress(true);
+  if(improvedLeaderboards.length)queueBestLeaderboardScores(improvedLeaderboards);
+  $('menuOverlay').classList.add('hidden');
+  $('gameHud').classList.add('hidden');$('touch').classList.add('hidden');$('runStatus').classList.add('hidden');
+  // The run has ended and progress has been saved. Show a fullscreen ad only
+  // when the VK SDK says it is supported and currently available.
+  showFullscreenAdBetweenRuns().finally(showRunResults);
+}
+async function showFullscreenAdBetweenRuns(){
+  const prefix='[NEON-RACE][Fullscreen]';
+  if(!vkSdk){
+    console.info(prefix,'skipped: VK SDK is not initialized');
+    return false;
+  }
+  const ad=vkSdk.ads?.fullscreen;
+  if(!ad){
+    console.warn(prefix,'SDK does not expose ads.fullscreen');
+    return false;
+  }
+  console.info(prefix,'availability check',{isSupported:ad.isSupported});
+  if(!ad.isSupported){
+    console.info(prefix,'skipped: NOT_SUPPORTED');
+    return false;
+  }
+  try{
+    const canShow=await ad.canShow();
+    console.info(prefix,'canShow() returned',canShow);
+    if(!canShow){
+      console.info(prefix,'skipped: canShow() returned false (cooldown or temporary unavailability)');
+      return false;
+    }
+    // Write the just-finished run to VK storage before opening the ad overlay.
+    if(vkSdk.storage)await syncVKCloud(false);
+    // Gameplay is already stopped by finishRun(); pause Web Audio during the ad.
+    if(audio&&audio.state==='running')await audio.suspend().catch(()=>{});
+    console.info(prefix,'calling show()');
+    const result=await ad.show();
+    console.info(prefix,'show() result',result);
+    if(result?.rendered===true){
+      console.info(prefix,'fullscreen slot was rendered');
+      return true;
+    }
+    console.warn(prefix,'fullscreen slot was not rendered',result?.reason||'UNKNOWN');
+    return false;
+  }catch(error){
+    console.warn(prefix,'fullscreen request failed; continuing to results',error);
+    return false;
+  }finally{
+    if(soundOn&&audio&&audio.state==='suspended')await audio.resume().catch(()=>{});
+  }
+}
+function showRunResults(){
+  levelUpActive=false;$('levelUpOverlay').classList.add('hidden');
+  state='over';pausedByUser=false;pausedByPlatform=false;
+  $('menuOverlay').classList.remove('hidden');
+  $('gameHud').classList.add('hidden');$('touch').classList.add('hidden');$('runStatus').classList.add('hidden');
+  renderScreen();playSfx('finish');
+}
+function updateHUD(){$('hudScore').textContent=score;$('hudLives').textContent=lives;$('hudCrystals').textContent=profile.crystals;$('hudRunLevel').textContent=runLevel;$('hudRunXP').textContent=runEnergy+'/'+runEnergyNeed}
+function difficultyProfile(){
+  // A demanding opening, followed by a deliberately steep escalation. Earned upgrades create the long-term relief.
+  if(elapsed<20)return{tier:0,rockInterval:.48,rockSpeed:1.20,drifterChance:.26,hunterChance:.04,extraWaveChance:.02,gateRatio:.29,gateInterval:15,eventRest:12,powerChance:.80,powerMin:10,powerSpan:5};
+  if(elapsed<45)return{tier:1,rockInterval:.36,rockSpeed:1.29,drifterChance:.30,hunterChance:.12,extraWaveChance:.06,gateRatio:.27,gateInterval:12,eventRest:9,powerChance:.82,powerMin:9,powerSpan:5};
+  if(elapsed<75)return{tier:2,rockInterval:.29,rockSpeed:1.38,drifterChance:.33,hunterChance:.20,extraWaveChance:.14,gateRatio:.245,gateInterval:10,eventRest:7,powerChance:.84,powerMin:8,powerSpan:4};
+  if(elapsed<110)return{tier:3,rockInterval:.23,rockSpeed:1.53,drifterChance:.37,hunterChance:.28,extraWaveChance:.22,gateRatio:.215,gateInterval:8,eventRest:5,powerChance:.86,powerMin:7.5,powerSpan:4};
+  return{tier:4,rockInterval:.19,rockSpeed:1.64,drifterChance:.40,hunterChance:.33,extraWaveChance:.27,gateRatio:.20,gateInterval:7,eventRest:4,powerChance:.88,powerMin:7,powerSpan:3};
+}
+function spawnRock(){
+  const difficulty=difficultyProfile(),roll=Math.random();
+  const kind=roll<.16?'shard':roll<.16+difficulty.hunterChance?'hunter':roll<.16+difficulty.hunterChance+difficulty.drifterChance?'drifter':'rock';
+  const r=kind==='shard'?10+Math.random()*8:kind==='hunter'?13+Math.random()*5:14+Math.random()*19;
+  const baseSpeed=195+Math.random()*95+Math.min(260,elapsed*3.1);
+  const speedFactor=difficulty.rockSpeed*(kind==='shard'?1.42:kind==='hunter'?.98:1);
+  rocks.push({kind,x:r+Math.random()*(W-2*r),y:-r,r,vy:baseSpeed*speedFactor,vx:kind==='drifter'?(Math.random()<.5?-1:1)*(70+Math.random()*65+difficulty.tier*16):0,homing:kind==='hunter'?105+difficulty.tier*14:0,rot:Math.random()*6,spin:(Math.random()-.5)*3});
+}
+function spawnStar(){stars.push({x:18+Math.random()*(W-36),y:-15,r:10,vy:170+elapsed*2,phase:Math.random()*6})}
+function spawnPowerup(){const types=['shield','magnet','slow'];const type=types[Math.floor(Math.random()*types.length)];powerups.push({type,x:24+Math.random()*(W-48),y:-24,r:15,vy:145+Math.min(55,elapsed*.7),phase:Math.random()*6})}
+function spawnGate(){const difficulty=difficultyProfile();const gapW=Math.max(108,Math.min(184,W*difficulty.gateRatio));const margin=gapW/2+12;const baseGap=margin+Math.random()*Math.max(1,W-2*margin);gates.push({y:-24,gapX:baseGap,baseGap,gapW,vy:(155+Math.min(45,elapsed*.45))*(1+difficulty.tier*.035),phase:Math.random()*6,swing:Math.min(65,W*.10)*(difficulty.tier>=2?1.15:1),passed:false})}
+function startEvent(){const events=[
+  {id:'meteor',title:'МЕТЕОРИТНЫЙ ДОЖДЬ',duration:9},
+  {id:'crystal',title:'КРИСТАЛЬНЫЙ РАШ',duration:11},
+  {id:'wind',title:'ГРАВИТАЦИОННЫЙ ШТОРМ',duration:10}
+];const e=events[eventCycle%events.length];activeEvent=e.id;eventLeft=e.duration;eventCycle++;playSfx('event');updateRunStatus()}
+function eventLabel(){return activeEvent==='meteor'?'☄ МЕТЕОРИТНЫЙ ДОЖДЬ':activeEvent==='crystal'?'✦ КРИСТАЛЬНЫЙ РАШ':'〰 ГРАВИТАЦИОННЫЙ ШТОРМ'}
+function updateRunStatus(){const eb=$('eventBadge'),pb=$('powerBadge'),unit=currentLanguage==='en'?'s':'с';if(activeEvent){eb.textContent=translateText(eventLabel())+` · ${Math.ceil(eventLeft)}${unit}`;eb.classList.remove('hidden')}else eb.classList.add('hidden');let label='';if(shieldHits>0)label=`◇ ЩИТ · ${Math.ceil(shieldTimer)}${unit}`;else if(activeBuff==='magnet')label=`✧ МАГНИТ · ${Math.ceil(buffTimer)}${unit}`;else if(activeBuff==='slow')label=`◷ ЗАМЕДЛЕНИЕ · ${Math.ceil(buffTimer)}${unit}`;if(label){pb.textContent=translateText(label);pb.classList.remove('hidden')}else pb.classList.add('hidden')}
+function activatePowerup(p){if(p.type==='shield'){shieldHits=1;shieldTimer=12;burst(player.x,player.y,'#73eaff',16);playSfx('shield')}else if(p.type==='magnet'){activeBuff='magnet';buffTimer=8;burst(player.x,player.y,'#9c87ff',16);playSfx('magnet')}else{activeBuff='slow';buffTimer=6;burst(player.x,player.y,'#78f0b5',16);playSfx('slow')}updateRunStatus()}
+function burst(x,y,color,n=10){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=50+Math.random()*190;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.35+Math.random()*.4,color})}}
+function collectStar(s){s.y=H+100;starsThisRun++;profile.stats.totalStars++;const reward=activeEvent==='crystal'?3:1;profile.crystals+=reward;runCrystals+=reward;saveProgress(false);score+=activeEvent==='crystal'?160:100;burst(s.x,s.y,'#ffe77a',12);const now=performance.now();if(now-lastStarSfxAt>75){playSfx('star');lastStarSfxAt=now}gainRunEnergy();updateHUD()}
+function hitPlayer(color='#ff6388'){
+  collisionCooldown=.62+runBuild.phase*.18;
+  if(shieldHits>0){shieldHits=Math.max(0,shieldHits-1);if(shieldHits<=0)shieldTimer=0;burst(player.x,player.y,'#73eaff',24);playSfx('shieldHit');updateRunStatus();return}
+  if(currentShip().revive&&!ghostUsed){ghostUsed=true;burst(player.x,player.y,currentShip().color,22);playSfx('phase');return}
+  lives--;burst(player.x,player.y,color,18);playSfx('hit');if(lives<=0){updateHUD();finishRun()}
+}
+function update(dt){if(state!=='play'||levelUpActive)return;const ship=currentShip(),u=profile.upgrades;elapsed+=dt;const difficulty=difficultyProfile();scoreCarry+=dt*10*(1+u.reactor*.10);const earned=Math.floor(scoreCarry);if(earned>0){score+=earned;scoreCarry-=earned}
+  const speed=player.speed*(1+u.engine*.12)*(ship.speed||1)*(1+runBuild.thrusters*.10);
+  let moveX=(keys.arrowright||keys.d||keys.right?1:0)-(keys.arrowleft||keys.a||keys.left?1:0);
+  let moveY=(keys.arrowdown||keys.s||keys.down?1:0)-(keys.arrowup||keys.w||keys.up?1:0);
+  if(moveX&&moveY){const inv=Math.SQRT1_2;moveX*=inv;moveY*=inv}
+  player.x+=moveX*speed*dt;player.y+=moveY*speed*dt;
+  if(activeEvent==='wind')player.x+=Math.sin(elapsed*3.2)*72*dt;
+  clampPlayer();
+  if(activeEvent){eventLeft-=dt;if(eventLeft<=0){activeEvent=null;eventTimer=difficulty.eventRest+Math.random()*1.5;playSfx('eventEnd');updateRunStatus()}}else{eventTimer-=dt;if(eventTimer<=0)startEvent()}
+  spawn+=dt;starSpawn+=dt;powerSpawnTimer-=dt;gateTimer-=dt;
+  const baseRockInterval=difficulty.rockInterval,rockInterval=activeEvent==='meteor'?Math.max(.16,baseRockInterval*.48):baseRockInterval;
+  if(spawn>rockInterval){spawn=0;spawnRock();if(Math.random()<difficulty.extraWaveChance+(activeEvent==='meteor'?.08:0))spawnRock()}
+  const baseStarInterval=Math.max(.55,2.2-elapsed*.005)*(1-u.scanner*.12)*(1-runBuild.scanner*.08),starInterval=activeEvent==='crystal'?.48:baseStarInterval;
+  if(starSpawn>starInterval){starSpawn=0;spawnStar()}
+  if(powerSpawnTimer<=0){if(Math.random()<difficulty.powerChance)spawnPowerup();powerSpawnTimer=difficulty.powerMin+Math.random()*difficulty.powerSpan}
+  if(gateTimer<=0){spawnGate();gateTimer=difficulty.gateInterval+Math.random()*3}
+  collisionCooldown=Math.max(0,collisionCooldown-dt);shieldTimer=Math.max(0,shieldTimer-dt);if(shieldTimer<=0)shieldHits=0;if(buffTimer>0){buffTimer=Math.max(0,buffTimer-dt);if(buffTimer===0)activeBuff=null}
+  const hazardScale=(activeBuff==='slow'?.58:1)*Math.pow(.94,runBuild.stasis);
+  for(const r of rocks){if(r.kind==='hunter'){const desired=Math.max(-r.homing,Math.min(r.homing,(player.x-r.x)*.85));r.vx+=(desired-r.vx)*Math.min(1,dt*1.35)}r.y+=r.vy*dt*hazardScale;r.x+=r.vx*dt;if(r.x<r.r||r.x>W-r.r){r.x=Math.max(r.r,Math.min(W-r.r,r.x));r.vx*=-.72}r.rot+=r.spin*dt;if(collisionCooldown<=0&&Math.hypot(r.x-player.x,r.y-player.y)<r.r+17){r.y=H+100;hitPlayer();if(state!=='play')return}}
+  for(const g of gates){const oldY=g.y;g.y+=g.vy*dt*hazardScale;g.gapX=g.baseGap+Math.sin(g.y*.009+g.phase)*g.swing;g.gapX=Math.max(g.gapW/2+8,Math.min(W-g.gapW/2-8,g.gapX));if(!g.passed&&oldY<=player.y&&g.y>player.y){g.passed=true;if(Math.abs(player.x-g.gapX)<g.gapW/2-18){score+=75;playSfx('gate')}}if(collisionCooldown<=0&&Math.abs(g.y-player.y)<13&&Math.abs(player.x-g.gapX)>g.gapW/2-18){hitPlayer('#ba8cff');if(state!=='play')return}}
+  const magnetRadius=18+u.magnet*14+(ship.magnet||0)+runBuild.magnet*30+(activeBuff==='magnet'?78:0);
+  for(const s of stars){s.y+=s.vy*dt*hazardScale;s.phase+=dt*5;const dx=player.x-s.x,dy=player.y-s.y,dist=Math.hypot(dx,dy);if(magnetRadius>18&&dist<magnetRadius+45&&dist>24){const pull=(activeBuff==='magnet'?4.2:1.8)*dt;s.x+=dx*pull;s.y+=dy*pull}if(dist<magnetRadius+9){collectStar(s);if(levelUpActive)return}}
+  for(const p of powerups){p.y+=p.vy*dt;p.phase+=dt*4;if(Math.hypot(p.x-player.x,p.y-player.y)<p.r+19){p.y=H+100;activatePowerup(p)}}
+  rocks=rocks.filter(r=>r.y<H+60);stars=stars.filter(s=>s.y<H+30);powerups=powerups.filter(p=>p.y<H+35);gates=gates.filter(g=>g.y<H+30);
+  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt}particles=particles.filter(p=>p.life>0);updateHUD();updateRunStatus()
+}
+
+function drawBackground(){ctx.fillStyle='#080d1d';ctx.fillRect(0,0,W,H);const g=ctx.createRadialGradient(W*.5,H*.3,10,W*.5,H*.3,Math.max(W,H)*.8);g.addColorStop(0,'#18264b');g.addColorStop(1,'#080d1d');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);const t=performance.now()*.018;for(let i=0;i<70;i++){const x=(i*137.5)%W,y=((i*91.7+t*(i%3+1))%(H+10));ctx.fillStyle=i%7===0?'#75eaff':'#8da4d5';ctx.globalAlpha=.25+(i%5)*.12;ctx.fillRect(x,y,i%7===0?2:1,i%7===0?2:1)}ctx.globalAlpha=1;ctx.strokeStyle='#2b4a7a55';ctx.lineWidth=1;for(let y=H*.6;y<H;y+=36){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}}
+function drawShip(){const ship=currentShip();ctx.save();ctx.translate(player.x,player.y);ctx.shadowBlur=22;ctx.shadowColor=ship.color;ctx.fillStyle=ship.color;ctx.beginPath();if(ship.id==='guardian'||ship.id==='bastion'){ctx.moveTo(0,-26);ctx.lineTo(25,5);ctx.lineTo(20,21);ctx.lineTo(0,14);ctx.lineTo(-20,21);ctx.lineTo(-25,5)}else if(ship.id==='valkyrie'||ship.id==='storm'){ctx.moveTo(0,-28);ctx.lineTo(29,16);ctx.lineTo(9,10);ctx.lineTo(0,21);ctx.lineTo(-9,10);ctx.lineTo(-29,16)}else if(ship.id==='magnet'){ctx.moveTo(0,-26);ctx.lineTo(22,17);ctx.lineTo(8,12);ctx.lineTo(0,20);ctx.lineTo(-8,12);ctx.lineTo(-22,17)}else{ctx.moveTo(0,-25);ctx.lineTo(ship.id==='phantom'?15:19,18);ctx.lineTo(0,10);ctx.lineTo(ship.id==='phantom'?-15:-19,18)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,-4,5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#8c78ff';ctx.fillRect(-5,17,10,9+Math.random()*7);
+  if(ship.id==='ghost'&&ghostUsed){ctx.strokeStyle='#ffe27a';ctx.globalAlpha=.8;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,28,0,Math.PI*2);ctx.stroke()}
+  if(shieldHits>0){ctx.globalAlpha=.5+.2*Math.sin(performance.now()*.012);ctx.strokeStyle='#72eaff';ctx.lineWidth=3;ctx.shadowBlur=18;ctx.shadowColor='#72eaff';ctx.beginPath();ctx.arc(0,0,31,0,Math.PI*2);ctx.stroke()}
+  ctx.restore()}
+function drawGate(g){ctx.save();ctx.shadowBlur=18;ctx.shadowColor='#9b7bff';ctx.fillStyle='#a18bff';ctx.globalAlpha=.82;const leftEnd=g.gapX-g.gapW/2,rightStart=g.gapX+g.gapW/2;ctx.fillRect(0,g.y-7,Math.max(0,leftEnd),14);ctx.fillRect(rightStart,g.y-7,Math.max(0,W-rightStart),14);ctx.globalAlpha=.3;ctx.fillStyle='#e5deff';ctx.fillRect(Math.max(0,leftEnd-5),g.y-2,Math.min(10,leftEnd),4);ctx.fillRect(rightStart,g.y-2,Math.min(10,W-rightStart),4);ctx.restore()}
+function drawPowerup(p){const styles={shield:{color:'#65eaff',symbol:'◇'},magnet:{color:'#b69aff',symbol:'✧'},slow:{color:'#78f0b5',symbol:'◷'}};const st=styles[p.type];ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.sin(p.phase)*.12);ctx.shadowBlur=20;ctx.shadowColor=st.color;ctx.fillStyle=st.color+'33';ctx.strokeStyle=st.color;ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(st.symbol,0,1);ctx.restore()}
+function draw(){drawBackground();for(const g of gates)drawGate(g);for(const r of rocks){const isHunter=r.kind==='hunter';ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.shadowBlur=isHunter?18:12;ctx.shadowColor=r.kind==='shard'?'#68eaff':isHunter?'#ffbf68':r.kind==='drifter'?'#b78cff':'#ff647d';ctx.fillStyle=r.kind==='shard'?'#4d9db5':isHunter?'#a36a42':r.kind==='drifter'?'#725b9b':'#8b526b';ctx.strokeStyle=r.kind==='shard'?'#9ef2ff':isHunter?'#ffe0a0':r.kind==='drifter'?'#d1baff':'#ff8a9d';ctx.lineWidth=2;ctx.beginPath();if(r.kind==='shard'){ctx.moveTo(0,-r.r*1.35);ctx.lineTo(r.r*.85,r.r);ctx.lineTo(-r.r,r.r*.55)}else if(isHunter){for(let i=0;i<8;i++){const a=i*Math.PI/4,rr=r.r*(i%2?.68:1.08);if(!i)ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);else ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}}else{for(let i=0;i<9;i++){const a=i*Math.PI*2/9,rr=r.r*(.78+Math.sin(i*4.2)*.18);if(!i)ctx.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);else ctx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr)}}ctx.closePath();ctx.fill();ctx.stroke();if(isHunter){ctx.shadowBlur=0;ctx.fillStyle='#fff0c8';ctx.beginPath();ctx.arc(0,0,Math.max(2,r.r*.2),0,Math.PI*2);ctx.fill()}ctx.restore()}
+  for(const s of stars){ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.phase*.15);ctx.shadowBlur=18;ctx.shadowColor='#ffe77a';ctx.fillStyle='#ffe77a';ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?4:11;if(!i)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}ctx.closePath();ctx.fill();ctx.restore()}
+  for(const p of powerups)drawPowerup(p);
+  for(const p of particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,4,4)}ctx.globalAlpha=1;if(state==='play'||state==='paused')drawShip()}
+
+function frame(now){const dt=Math.min(.04,(now-last)/1000||0);last=now;update(dt);draw();requestAnimationFrame(frame)}
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b){setScreen(b.dataset.tab);playSfx('ui')}});
+$('runLevelChoices').addEventListener('click',e=>{const b=e.target.closest('[data-run-perk]');if(b)chooseRunPerk(b.dataset.runPerk)});
+$('screenContent').addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){setScreen(tab.dataset.tab);return}const b=e.target.closest('[data-action]');if(!b||b.disabled)return;const action=b.dataset.action,id=b.dataset.id;
+  if(action==='start-run'){startRun();return}if(action==='resume'){pauseRun();return}if(action==='go-home'){if(state==='paused'){finishRun()}else{showMenu('home')}return}if(action==='reward-ad'){showRewardedAd(b.dataset.source||'menu');return}if(action==='select-leaderboard'){if(LEADERBOARDS[id]){activeLeaderboard=id;renderScreen();loadLeaderboard(id,true)}return}if(action==='refresh-leaderboard'){loadLeaderboard(activeLeaderboard,true);return}
+  if(action==='buy-ship'){const s=SHIPS.find(x=>x.id===id);if(!s||profile.unlockedShips.includes(id)||levelInfo().level<s.level||profile.crystals<s.price)return;profile.crystals-=s.price;profile.unlockedShips.push(id);profile.selectedShip=id;saveProgress(true);playSfx('buy');renderScreen();return}
+  if(action==='select-ship'){if(profile.unlockedShips.includes(id)){profile.selectedShip=id;saveProgress(true);renderScreen();playSfx('select')}return}
+  if(action==='buy-upgrade'){const u=UPGRADES.find(x=>x.id===id);if(!u)return;const lvl=upgradeLevel(id),cost=nextUpgradeCost(u);if(lvl>=u.max||(levelInfo().level<u.level&&lvl===0)||profile.crystals<cost)return;profile.crystals-=cost;profile.upgrades[id]++;saveProgress(true);playSfx('buy');renderScreen();return}
+  if(action==='sync-cloud'&&vkSdk?.storage){syncVKCloud(true);return}
+  if(action==='authorize-player'){authorizeVKPlayer();return}
+});
+$('languageSelect').addEventListener('change',e=>{const next=e.target.value==='en'?'en':'ru';if(next===currentLanguage)return;currentLanguage=next;try{localStorage.setItem(LANGUAGE_KEY,currentLanguage)}catch(err){}applyLanguageShell();renderScreen();updateRunStatus()});
+$('pauseBtn').onclick=()=>{if(state==='play')pauseRun()};
+$('soundBtn').onclick=()=>setSoundEnabled(!soundOn);$('menuSoundBtn').onclick=()=>setSoundEnabled(!soundOn);updateSoundButtons();
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown','a','d','w','s',' '].includes(k))e.preventDefault();keys[k]=true;if(e.key==='Escape'||k==='p'){if(state==='play')pauseRun();else if(state==='paused')pauseRun()}});
+addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+let pointerDown=false;function movePlayerToPointer(e){if(state!=='play')return;player.x=e.clientX;player.y=e.clientY;clampPlayer()}
+canvas.addEventListener('pointerdown',e=>{if(state!=='play')return;pointerDown=true;try{canvas.setPointerCapture(e.pointerId)}catch(_){}movePlayerToPointer(e)});
+canvas.addEventListener('pointermove',e=>{if(pointerDown)movePlayerToPointer(e)});
+canvas.addEventListener('pointerup',()=>pointerDown=false);canvas.addEventListener('pointercancel',()=>pointerDown=false);
+function bindHoldButton(id,key){const el=$(id);const stop=()=>{keys[key]=false};el.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true;try{el.setPointerCapture(e.pointerId)}catch(_){}});el.addEventListener('pointerup',stop);el.addEventListener('pointercancel',stop);el.addEventListener('lostpointercapture',stop);el.addEventListener('contextmenu',e=>e.preventDefault())}
+bindHoldButton('leftBtn','left');bindHoldButton('rightBtn','right');bindHoldButton('upBtn','up');bindHoldButton('downBtn','down');
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    if(state==='play'){pausedByUser=false;pausedByPlatform=true;pauseInterface(true)}
+    stopMusic();if(audio?.state==='running')audio.suspend().catch(()=>{});
+    if(vkSdk?.storage&&(!vkLastFlushAt||Date.now()-vkLastFlushAt>=30000)&&!vkFlushBusy){syncVKCloud(true).catch(e=>console.warn('VK background flush failed',e))}
+  }else if(state==='paused'&&pausedByPlatform){pausedByPlatform=false;platformPaused=false;resumeInterface(true)}
+});
+addEventListener('pagehide',()=>{
+  saveLocal();
+  if(vkSdk?.storage){
+    try{vkSdk.storage.set('neonRaceProfile_vk_v1',JSON.parse(JSON.stringify(profile)));const pending=vkSdk.storage.flush();if(pending&&typeof pending.catch==='function')pending.catch(e=>console.warn('VK flush on pagehide failed',e))}catch(e){console.warn('VK cloud save on pagehide failed',e)}
+  }
+  gameplayStop();
+});
+applyLanguageShell();updateWallet();renderScreen();loadSDK();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
