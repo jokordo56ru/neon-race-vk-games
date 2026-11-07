@@ -1,0 +1,10 @@
+NEON RACE — VK Games Edition
+Base gameplay: 5.5
+Target: VK Mini Apps / VK Games (VKontakte and Odnoklassniki)
+Bridge: @vkontakte/vk-bridge 3.0.2
+Entrypoint: index.html
+Local save key: neonRaceProgress_vk_v1
+Cloud save key: neonRaceProfile_vk_v1
+Rewarded ad reward: +50 crystals, only after confirmed platform result
+Combat: none — dodge-only; no weapons, shots, or asteroid destruction
+Ships: 5.5 costs preserved (180, 350, 600, 900, 1400, 2100, 3000)
