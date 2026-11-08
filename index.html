@@ -501,8 +501,8 @@ function loadSDK(){
   if(window.vkBridge){initSDK();return}
   vkSdkLoadStarted=true;
   const sources=[
-    'https://unpkg.com/@vkontakte/vk-bridge@3.0.2/dist/browser.min.js',
-    'https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@3.0.2/dist/browser.min.js'
+    'https://unpkg.com/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js',
+    'https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.14.0/dist/browser.min.js'
   ];
   const tryLoad=index=>{
     if(index>=sources.length){setSaveStatus('VK Bridge не загрузился; доступно локальное сохранение');return}
